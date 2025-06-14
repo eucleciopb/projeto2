@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurações - Sistema de Pesquisa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .nav-menu {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .nav-menu a {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .config-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .config-card h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4299e1, #3182ce);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e53e3e, #c53030);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4299e1;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background: #48bb78;
+            animation: pulse 2s infinite;
+        }
+
+        .status-offline {
+            background: #e53e3e;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(72, 187, 120, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            color: #744210;
+            border: 1px solid #f6e05e;
+        }
+
+        .config-section {
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .config-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .backup-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .backup-info {
+            flex: 1;
+        }
+
+        .backup-date {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .backup-size {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .log-entry {
+            padding: 10px;
+            border-left: 4px solid #4299e1;
+            background: #f7fafc;
+            margin-bottom: 10px;
+            border-radius: 0 8px 8px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-timestamp {
+            color: #718096;
+            font-weight: bold;
+        }
+
+        .log-level-info { border-left-color: #4299e1; }
+        .log-level-warning { border-left-color: #ed8936; }
+        .log-level-error { border-left-color: #e53e3e; }
+        .log-level-success { border-left-color: #48bb78; }
+
+        @media (max-width: 768px) {
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Configurações do Sistema</h1>
+            <p>Gerencie as configurações e personalize o sistema</p>
+        </div>
+
+        <div class="nav-menu">
+            <a href="index-menu.html">🏠 Menu Principal</a>
+            <a href="index.html">📝 Pesquisa</a>
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="admin-download.html">📥 Downloads</a>
+        </div>
+
+        <div id="alerts"></div>
+
+        <div class="config-grid">
+            <!-- Configurações do Firebase -->
+            <div class="config-card">
+                <h3>🔥 Configurações do Firebase</h3>
+                
+                <div class="config-section">
+                    <div class="form-group">
+                        <label>Status da Conexão:</label>
+                        <div>
+                            <span class="status-indicator status-online" id="firebaseStatus"></span>
+                            <span id="firebaseStatusText">Conectado</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="apiKey">API Key:</label>
+                        <input type="password" id="apiKey" placeholder="Sua API Key do Firebase">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="projectId">Project ID:</label>
+                        <input type="text" id="projectId" placeholder="ID do projeto Firebase">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="collectionName">Nome da Coleção:</label>
+                        <input type="text" id="collectionName" value="satisfaction-surveys">
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="testFirebaseConnection()">🔍 Testar Conexão</button>
+                <button class="btn btn-success" onclick="saveFirebaseConfig()">💾 Salvar Configurações</button>
+            </div>
+
+            <!-- Configurações de Aparência -->
+            <div class="config-card">
+                <h3>🎨 Personalização</h3>
+                
+                <div class="config-section">
+                    <div class="form-group">
+                        <label for="themeSelect">Tema do Sistema:</label>
+                        <select id="themeSelect" onchange="changeTheme()">
+                            <option value="default">Padrão (Azul/Roxo)</option>
+                            <option value="green">Verde</option>
+                            <option value="orange">Laranja</option>
+                            <option value="purple">Roxo</option>
+                            <option value="dark">Escuro</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="companyName">Nome da Empresa:</label>
+                        <input type="text" id="companyName" placeholder="Nome da sua empresa">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="logoUrl">URL do Logo:</label>
+                        <input type="url" id="logoUrl" placeholder="https://exemplo.com/logo.png">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="showCompanyLogo"> Exibir logo da empresa
+                        </label>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="previewTheme()">👁️ Visualizar</button>
+                <button class="btn btn-success" onclick="saveAppearanceConfig()">💾 Salvar Aparência</button>
+            </div>
+
+            <!-- Configurações de Notificações -->
+            <div class="config-card">
+                <h3>🔔 Notificações</h3>
+                
+                <div class="config-section">
+                    <div class="form-group">
+                        <label>Notificações por Email:</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="emailNotifications">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notificationEmail">Email para Notificações:</label>
+                        <input type="email" id="notificationEmail" placeholder="admin@empresa.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Notificar sobre:</label>
+                        <div>
+                            <label><input type="checkbox" id="notifyNewResponse"> Novas respostas</label><br>
+                                                        <label><input type="checkbox" id="notifyNewResponse"> Novas respostas</label><br>
+                            <label><input type="checkbox" id="notifyLowRating"> Avaliações baixas (1-2 estrelas)</label><br>
+                            <label><input type="checkbox" id="notifyDaily"> Relatório diário</label><br>
+                            <label><input type="checkbox" id="notifyWeekly"> Relatório semanal</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notificationFrequency">Frequência de Notificações:</label>
+                        <select id="notificationFrequency">
+                            <option value="immediate">Imediata</option>
+                            <option value="hourly">A cada hora</option>
+                            <option value="daily">Diária</option>
+                            <option value="weekly">Semanal</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="testNotification()">📧 Testar Notificação</button>
+                <button class="btn btn-success" onclick="saveNotificationConfig()">💾 Salvar Notificações</button>
+            </div>
+
+            <!-- Backup e Restauração -->
+            <div class="config-card">
+                <h3>💾 Backup e Restauração</h3>
+                
+                <div class="config-section">
+                    <div class="form-group">
+                        <label>Backup Automático:</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="autoBackup" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="backupFrequency">Frequência do Backup:</label>
+                        <select id="backupFrequency">
+                            <option value="daily">Diário</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="monthly">Mensal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Backups Disponíveis:</label>
+                        <div id="backupList">
+                            <div class="backup-item">
+                                <div class="backup-info">
+                                    <div class="backup-date">Backup - 15/12/2024 14:30</div>
+                                    <div class="backup-size">Tamanho: 2.5 MB | 1,247 registros</div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-primary" onclick="downloadBackup('backup-20241215')">📥 Download</button>
+                                    <button class="btn btn-warning" onclick="restoreBackup('backup-20241215')">🔄 Restaurar</button>
+                                </div>
+                            </div>
+                            
+                            <div class="backup-item">
+                                <div class="backup-info">
+                                    <div class="backup-date">Backup - 08/12/2024 14:30</div>
+                                    <div class="backup-size">Tamanho: 2.1 MB | 1,089 registros</div>
+                                </div>
+                                <div>
+                                    <button class="btn btn-primary" onclick="downloadBackup('backup-20241208')">📥 Download</button>
+                                    <button class="btn btn-warning" onclick="restoreBackup('backup-20241208')">🔄 Restaurar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-success" onclick="createBackup()">💾 Criar Backup Agora</button>
+                <button class="btn btn-primary" onclick="importBackup()">📤 Importar Backup</button>
+                <input type="file" id="backupFile" accept=".json" style="display: none;" onchange="handleBackupImport()">
+            </div>
+
+            <!-- Logs do Sistema -->
+            <div class="config-card">
+                <h3>📋 Logs do Sistema</h3>
+                
+                <div class="config-section">
+                    <div class="form-group">
+                        <label for="logLevel">Nível de Log:</label>
+                        <select id="logLevel" onchange="filterLogs()">
+                            <option value="all">Todos</option>
+                            <option value="info">Informação</option>
+                            <option value="warning">Avisos</option>
+                            <option value="error">Erros</option>
+                            <option value="success">Sucessos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Logs Recentes:</label>
+                        <div id="systemLogs" style="max-height: 300px; overflow-y: auto;">
+                            <div class="log-entry log-level-success">
+                                <span class="log-timestamp">[15/12/2024 14:35:22]</span>
+                                <span class="log-level">[SUCCESS]</span>
+                                Sistema iniciado com sucesso
+                            </div>
+                            
+                            <div class="log-entry log-level-info">
+                                <span class="log-timestamp">[15/12/2024 14:35:18]</span>
+                                <span class="log-level">[INFO]</span>
+                                Conectando ao Firebase...
+                            </div>
+                            
+                            <div class="log-entry log-level-success">
+                                <span class="log-timestamp">[15/12/2024 14:30:45]</span>
+                                <span class="log-level">[SUCCESS]</span>
+                                Nova resposta recebida - ID: resp_001247
+                            </div>
+                            
+                            <div class="log-entry log-level-info">
+                                <span class="log-timestamp">[15/12/2024 14:25:12]</span>
+                                <span class="log-level">[INFO]</span>
+                                Dashboard atualizado - 1,247 registros carregados
+                            </div>
+                            
+                            <div class="log-entry log-level-warning">
+                                <span class="log-timestamp">[15/12/2024 14:20:33]</span>
+                                <span class="log-level">[WARNING]</span>
+                                Tentativa de acesso sem autenticação
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="refreshLogs()">🔄 Atualizar Logs</button>
+                <button class="btn btn-warning" onclick="clearLogs()">🗑️ Limpar Logs</button>
+                <button class="btn btn-success" onclick="exportLogs()">📥 Exportar Logs</button>
+            </div>
+
+            <!-- Configurações Avançadas -->
+            <div class="config-card">
+                <h3>🔧 Configurações Avançadas</h3>
+                
+                <div class="config-section">
+                    <div class="form-group">
+                        <label for="maxResponses">Máximo de Respostas por Dia:</label>
+                        <input type="number" id="maxResponses" value="1000" min="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sessionTimeout">Timeout de Sessão (minutos):</label>
+                        <input type="number" id="sessionTimeout" value="30" min="5" max="120">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dataRetention">Retenção de Dados (dias):</label>
+                        <input type="number" id="dataRetention" value="365" min="30">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableAnalytics"> Habilitar Analytics
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableDebugMode"> Modo Debug
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="enableCompression"> Compressão de Dados
+                        </label>
+                    </div>
+                </div>
+                
+                <button class="btn btn-success" onclick="saveAdvancedConfig()">💾 Salvar Configurações</button>
+                <button class="btn btn-warning" onclick="resetToDefaults()">🔄 Restaurar Padrões</button>
+                <button class="btn btn-danger" onclick="clearAllData()">🗑️ Limpar Todos os Dados</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="configuracoes.js"></script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisa de Satisfação</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="form-wrapper">
+            <div class="header">
+                <h1>Pesquisa de Satisfação</h1>
+                <p>Sua opinião é muito importante para nós!</p>
+            </div>
+
+            <form class="satisfaction-form" id="satisfactionForm">
+                <!-- Avaliação Geral -->
+                <div class="form-group">
+                    <label class="form-label">Como você avalia nosso serviço?</label>
+                    <div class="rating-container">
+                        <div class="rating-option">
+                            <input type="radio" id="excellent" name="rating" value="5">
+                            <label for="excellent" class="rating-label excellent">
+                                <span class="emoji">😍</span>
+                                <span class="text">Excelente</span>
+                            </label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" id="good" name="rating" value="4">
+                            <label for="good" class="rating-label good">
+                                <span class="emoji">😊</span>
+                                <span class="text">Bom</span>
+                            </label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" id="regular" name="rating" value="3">
+                            <label for="regular" class="rating-label regular">
+                                <span class="emoji">😐</span>
+                                <span class="text">Regular</span>
+                            </label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" id="bad" name="rating" value="2">
+                            <label for="bad" class="rating-label bad">
+                                <span class="emoji">😞</span>
+                                <span class="text">Ruim</span>
+                            </label>
+                        </div>
+                        <div class="rating-option">
+                            <input type="radio" id="terrible" name="rating" value="1">
+                            <label for="terrible" class="rating-label terrible">
+                                <span class="emoji">😡</span>
+                                <span class="text">Péssimo</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aspectos Específicos -->
+                <div class="form-group">
+                    <label class="form-label">Avalie os aspectos específicos:</label>
+                    
+                    <div class="aspect-rating">
+                        <span class="aspect-label">Atendimento</span>
+                        <div class="stars">
+                            <input type="radio" id="atendimento-5" name="atendimento" value="5">
+                            <label for="atendimento-5">★</label>
+                            <input type="radio" id="atendimento-4" name="atendimento" value="4">
+                            <label for="atendimento-4">★</label>
+                            <input type="radio" id="atendimento-3" name="atendimento" value="3">
+                            <label for="atendimento-3">★</label>
+                            <input type="radio" id="atendimento-2" name="atendimento" value="2">
+                            <label for="atendimento-2">★</label>
+                            <input type="radio" id="atendimento-1" name="atendimento" value="1">
+                            <label for="atendimento-1">★</label>
+                        </div>
+                    </div>
+
+                    <div class="aspect-rating">
+                        <span class="aspect-label">Qualidade</span>
+                        <div class="stars">
+                            <input type="radio" id="qualidade-5" name="qualidade" value="5">
+                            <label for="qualidade-5">★</label>
+                            <input type="radio" id="qualidade-4" name="qualidade" value="4">
+                            <label for="qualidade-4">★</label>
+                            <input type="radio" id="qualidade-3" name="qualidade" value="3">
+                            <label for="qualidade-3">★</label>
+                            <input type="radio" id="qualidade-2" name="qualidade" value="2">
+                            <label for="qualidade-2">★</label>
+                            <input type="radio" id="qualidade-1" name="qualidade" value="1">
+                            <label for="qualidade-1">★</label>
+                        </div>
+                    </div>
+
+                    <div class="aspect-rating">
+                        <span class="aspect-label">Rapidez</span>
+                        <div class="stars">
+                            <input type="radio" id="rapidez-5" name="rapidez" value="5">
+                            <label for="rapidez-5">★</label>
+                            <input type="radio" id="rapidez-4" name="rapidez" value="4">
+                            <label for="rapidez-4">★</label>
+                            <input type="radio" id="rapidez-3" name="rapidez" value="3">
+                            <label for="rapidez-3">★</label>
+                            <input type="radio" id="rapidez-2" name="rapidez" value="2">
+                            <label for="rapidez-2">★</label>
+                            <input type="radio" id="rapidez-1" name="rapidez" value="1">
+                            <label for="rapidez-1">★</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recomendação -->
+                <div class="form-group">
+                    <label class="form-label">Você nos recomendaria?</label>
+                    <div class="recommendation-container">
+                        <div class="recommendation-option">
+                            <input type="radio" id="recommend-yes" name="recommend" value="yes">
+                            <label for="recommend-yes" class="recommend-label yes">
+                                <span class="icon">👍</span>
+                                <span class="text">Sim, com certeza!</span>
+                            </label>
+                        </div>
+                        <div class="recommendation-option">
+                            <input type="radio" id="recommend-maybe" name="recommend" value="maybe">
+                            <label for="recommend-maybe" class="recommend-label maybe">
+                                <span class="icon">🤔</span>
+                                <span class="text">Talvez</span>
+                            </label>
+                        </div>
+                        <div class="recommendation-option">
+                            <input type="radio" id="recommend-no" name="recommend" value="no">
+                            <label for="recommend-no" class="recommend-label no">
+                                <span class="icon">👎</span>
+                                <span class="text">Não recomendaria</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comentários -->
+                <div class="form-group">
+                    <label for="comments" class="form-label">Comentários adicionais:</label>
+                    <textarea id="comments" name="comments" placeholder="Conte-nos mais sobre sua experiência..." rows="4"></textarea>
+                </div>
+
+                <!-- Informações do Cliente -->
+                <div class="form-group">
+                    <label for="name" class="form-label">Nome (opcional):</label>
+                    <input type="text" id="name" name="name" placeholder="Seu nome">
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label">E-mail (opcional):</label>
+                    <input type="email" id="email" name="email" placeholder="seu@email.com">
+                </div>
+
+                <!-- Botões -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Limpar</button>
+                    <button type="submit" class="btn btn-primary">Enviar Pesquisa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase CDN Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBoEFGxMUgb-MUbWpNzRbUEpEQDXes4wcc",
+            authDomain: "programa-de-pontos-nh.firebaseapp.com",
+            projectId: "programa-de-pontos-nh",
+            storageBucket: "programa-de-pontos-nh.firebasestorage.app",
+            messagingSenderId: "136030554657",
+            appId: "1:136030554657:web:9bc5561eddc658ab087160"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // Initialize Firestore
+        const db = firebase.firestore();
+        
+        // Make available globally
+        window.db = db;
+    </script>
+    
+    <!-- Seu script principal -->
+    <script src="script.js"></script>
+</body>
+</html>

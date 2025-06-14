@@ -1,0 +1,158 @@
+/* Responsive enhancements for configuration page */
+@media (max-width: 1200px) {
+    .config-grid {
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header {
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .nav-menu {
+        padding: 15px;
+    }
+    
+    .nav-menu a {
+        display: block;
+        margin: 5px 0;
+        text-align: center;
+    }
+    
+    .config-card {
+        padding: 20px;
+    }
+    
+    .config-card h3 {
+        font-size: 1.1rem;
+    }
+    
+    .backup-item {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .backup-item > div {
+        width: 100%;
+    }
+    
+    .btn {
+        width: 100%;
+        margin: 2px 0;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+}
+
+@media (max-width: 480px) {
+    .config-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .config-card {
+        padding: 15px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 15px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .config-card {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        background: #4a5568;
+        color: #e2e8f0;
+        border-color: #718096;
+    }
+    
+    .backup-item {
+        background: #4a5568;
+    }
+    
+    .log-entry {
+        background: #4a5568;
+        color: #e2e8f0;
+    }
+}
+
+/* Print styles */
+@media print {
+    .nav-menu,
+    .btn,
+    .toggle-switch {
+        display: none !important;
+    }
+    
+    .config-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+    
+    body {
+        background: white !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .config-card {
+        border: 2px solid #000;
+    }
+    
+    .btn {
+        border: 2px solid #000;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        border: 2px solid #000;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .status-online {
+        animation: none;
+    }
+}
