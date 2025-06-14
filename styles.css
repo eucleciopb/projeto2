@@ -150,7 +150,6 @@ body {
 
 .stars {
     display: flex;
-    flex-direction: row-reverse;
     gap: 5px;
 }
 
@@ -165,14 +164,29 @@ body {
     transition: all 0.2s ease;
 }
 
-.stars label:hover,
-.stars label:hover ~ label {
+.stars input[type="radio"]:checked ~ label {
+    color: #22c55e;
+}
+
+/* Hover effect for stars */
+.stars label:hover {
     color: #fbbf24;
     transform: scale(1.1);
 }
 
+/* Color previous stars on hover */
+.stars:hover label {
+    color: #cbd5e0;
+}
+
+.stars label:hover,
+.stars label:hover ~ label {
+    color: #fbbf24;
+}
+
+/* Ensure checked stars stay green */
 .stars input[type="radio"]:checked ~ label {
-    color: #22c55e;
+    color: #22c55e !important;
 }
 
 /* Recommendation Styles */
