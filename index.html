@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Menu - Controle de Mochilas</title>
-
   <style>
     * {
       margin: 0;
@@ -47,7 +46,7 @@
       color: white;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
       transition: 0.3s;
       width: 100%;
     }
@@ -62,6 +61,13 @@
     }
     .novo:hover {
       background: #009f55;
+    }
+
+    .estoque {
+      background: #f9a826;
+    }
+    .estoque:hover {
+      background: #d88b00;
     }
 
     footer {
@@ -92,6 +98,10 @@
 
     <button onclick="window.location.href='resumo.html'">
       📊 Ver resumo das solicitações
+    </button>
+
+    <button class="estoque" onclick="window.location.href='estoque.html'">
+      🏷️ Controle de Estoque
     </button>
   </div>
 

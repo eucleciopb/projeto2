@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controle de Estoque de Mochilas</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      background: #121212;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 30px;
+    }
+
+    .container {
+      background: #1e1e1e;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      padding: 30px;
+      width: 100%;
+      max-width: 1100px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      text-align: center;
+      color: #00c4ff;
+      margin-bottom: 20px;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: #2a2a2a;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      transition: 0.3s;
+    }
+
+    .card.danger {
+      background: #5a1e1e;
+      border: 1px solid #ff4d4d;
+    }
+
+    .card h2 {
+      color: #00c4ff;
+      font-size: 1.8rem;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: #bbb;
+      margin-top: 5px;
+    }
+
+    button {
+      background: #00c4ff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-bottom: 15px;
+    }
+
+    button:hover {
+      background: #009ecb;
+    }
+
+    .form-mov {
+      display: none;
+      background: #2a2a2a;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .form-mov.active {
+      display: block;
+    }
+
+    .form-mov label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+
+    .form-mov input, .form-mov select, .form-mov textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #1e1e1e;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .form-mov button {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #333;
+      text-align: left;
+    }
+
+    th {
+      background: #222;
+      color: #00c4ff;
+    }
+
+    tr:hover {
+      background: #2a2a2a;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #888;
+      font-size: 0.8rem;
+    }
+
+    .back-btn {
+      background: #444;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📦 Controle de Estoque de Mochilas</h1>
+
+    <div id="dashboard" class="dashboard">
+      <div class="card">
+        <h2 id="totalEstoque">0</h2>
+        <p>Total de Mochilas em Estoque</p>
+      </div>
+      <div class="card">
+        <h2 id="totalAprovadas">0</h2>
+        <p>Total de Mochilas Aprovadas</p>
+      </div>
+      <div class="card">
+        <h2>600</h2>
+        <p>Estoque Mínimo</p>
+      </div>
+      <div class="card" id="cardDiferenca">
+        <h2 id="diferenca">0</h2>
+        <p>Diferença</p>
+      </div>
+    </div>
+
+    <button id="abrirForm">➕ Incluir Movimentação</button>
+
+    <div class="form-mov" id="formMov">
+      <h3>Registrar Movimentação</h3>
+      <label for="dataMov">Data</label>
+      <input type="date" id="dataMov" required>
+
+      <label for="tipoMov">Tipo</label>
+      <select id="tipoMov" required>
+        <option value="">Selecione...</option>
+        <option value="Entrada">Entrada</option>
+        <option value="Saída">Saída</option>
+      </select>
+
+      <label for="quantidadeMov">Total de Mochilas</label>
+      <input type="number" id="quantidadeMov" min="1" required>
+
+      <label for="descricaoMov">Descrição</label>
+      <textarea id="descricaoMov" rows="2" placeholder="Ex: Recebimento de mochilas novas"></textarea>
+
+      <button id="salvarMov">💾 Salvar Movimentação</button>
+    </div>
+
+    <h3 style="margin-top:20px;">📋 Histórico de Movimentações</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Tipo</th>
+          <th>Quantidade</th>
+          <th>Descrição</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaMov"></tbody>
+    </table>
+
+    <button class="back-btn" onclick="window.location.href='index.html'">⬅️ Voltar ao Menu</button>
+
+    <footer>© 2025 - Controle de Mochilas | Grupo Petrópolis</footer>
+  </div>
+
+  <!-- 🔥 Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } 
+      from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBcXTj40CI4fEJOGp2T_ghh3Wwpki4OnW0",
+      authDomain: "salasdereunioes-eb91a.firebaseapp.com",
+      projectId: "salasdereunioes-eb91a",
+      storageBucket: "salasdereunioes-eb91a.firebasestorage.app",
+      messagingSenderId: "961898084996",
+      appId: "1:961898084996:web:535185ceb0860e1e06e0d1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const totalEstoque = document.getElementById("totalEstoque");
+    const totalAprovadas = document.getElementById("totalAprovadas");
+    const diferenca = document.getElementById("diferenca");
+    const cardDiferenca = document.getElementById("cardDiferenca");
+    const tabelaMov = document.getElementById("tabelaMov");
+    const abrirForm = document.getElementById("abrirForm");
+    const formMov = document.getElementById("formMov");
+    const salvarMov = document.getElementById("salvarMov");
+
+    abrirForm.addEventListener("click", () => {
+      formMov.classList.toggle("active");
+    });
+
+    async function carregarPainel() {
+      const movs = await getDocs(collection(db, "estoque_mochilas"));
+      const solicitacoes = await getDocs(collection(db, "solicitacoes"));
+
+      let entradas = 0, saidas = 0;
+      movs.forEach(m => {
+        const d = m.data();
+        if (d.tipo === "Entrada") entradas += d.quantidade;
+        if (d.tipo === "Saída") saidas += d.quantidade;
+      });
+
+      let aprovadas = 0;
+      solicitacoes.forEach(s => {
+        const d = s.data();
+        aprovadas += d.qtdAprovada || 0;
+      });
+
+      const total = entradas - saidas;
+      const dif = total - 600;
+
+      totalEstoque.textContent = total;
+      totalAprovadas.textContent = aprovadas;
+      diferenca.textContent = dif >= 0 ? `+${dif}` : `${dif}`;
+      cardDiferenca.classList.toggle("danger", total < 600);
+
+      tabelaMov.innerHTML = "";
+      movs.forEach(m => {
+        const d = m.data();
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+          <td>${new Date(d.data).toLocaleDateString()}</td>
+          <td>${d.tipo}</td>
+          <td>${d.quantidade}</td>
+          <td>${d.descricao || "-"}</td>
+        `;
+        tabelaMov.appendChild(linha);
+      });
+    }
+
+    salvarMov.addEventListener("click", async () => {
+      const data = document.getElementById("dataMov").value;
+      const tipo = document.getElementById("tipoMov").value;
+      const quantidade = parseInt(document.getElementById("quantidadeMov").value);
+      const descricao = document.getElementById("descricaoMov").value.trim();
+
+      if (!data || !tipo || !quantidade || quantidade <= 0) {
+        alert("Preencha todos os campos corretamente!");
+        return;
+      }
+
+      await addDoc(collection(db, "estoque_mochilas"), { data, tipo, quantidade, descricao });
+      alert("Movimentação registrada com sucesso!");
+      formMov.reset();
+      formMov.classList.remove("active");
+      carregarPainel();
+    });
+
+    carregarPainel();
+  </script>
+</body>
+</html>
