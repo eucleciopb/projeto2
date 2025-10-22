@@ -65,6 +65,12 @@
 
     button:hover { background: #009ecb; }
 
+    .btn-salvar { background: #00c46a; }
+    .btn-salvar:hover { background: #009f55; }
+
+    .btn-apagar { background: #dc3545; }
+    .btn-apagar:hover { background: #b02a37; }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -86,10 +92,12 @@
       border-radius: 4px;
     }
 
-    .acoes { display: flex; gap: 10px; justify-content: center; }
-
-    .btn-salvar { background: #00c46a; }
-    .btn-salvar:hover { background: #009f55; }
+    .acoes {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
 
     .btn-voltar {
       background: #444;
@@ -114,6 +122,7 @@
       <div class="acoes">
         <button id="importarBtn">📥 Importar Excel</button>
         <button id="salvarBtn" class="btn-salvar">💾 Salvar Alterações</button>
+        <button id="apagarBtn" class="btn-apagar">🗑️ Apagar Todos</button>
       </div>
     </div>
 
@@ -159,11 +168,12 @@
     const tabelaBody = document.querySelector("#tabelaSub tbody");
     const importarBtn = document.getElementById("importarBtn");
     const salvarBtn = document.getElementById("salvarBtn");
+    const apagarBtn = document.getElementById("apagarBtn");
     const inputExcel = document.getElementById("inputExcel");
 
     let dadosTabela = [];
 
-    // 🟦 Carregar subordinações salvas no Firebase
+    // 🟦 Carregar subordinações salvas
     async function carregarSubordinacoes() {
       tabelaBody.innerHTML = "";
       const snapshot = await getDocs(collection(db, "subordinacoes"));
@@ -188,7 +198,7 @@
       if (!arquivo) return alert("Selecione um arquivo Excel primeiro!");
 
       const leitor = new FileReader();
-      leitor.onload = async (e) => {
+      leitor.onload = (e) => {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: "array" });
         const planilha = workbook.Sheets[workbook.SheetNames[0]];
@@ -222,18 +232,18 @@
     salvarBtn.addEventListener("click", async () => {
       const linhas = document.querySelectorAll("#tabelaSub tbody tr");
 
-      // Limpar a coleção antes de salvar novamente
+      // Apagar os dados antigos antes de gravar os novos
       const snapshot = await getDocs(collection(db, "subordinacoes"));
       for (const docItem of snapshot.docs) {
         await deleteDoc(doc(db, "subordinacoes", docItem.id));
       }
 
-      // Adicionar registros atualizados
       for (const tr of linhas) {
         const tds = tr.querySelectorAll("td");
         const diretor = tds[0].textContent.trim();
         const grc = tds[1].textContent.trim();
         const cd = tds[2].textContent.trim();
+
         if (diretor && grc && cd) {
           await addDoc(collection(db, "subordinacoes"), { diretor, grc, cd });
         }
@@ -241,6 +251,17 @@
 
       alert("✅ Subordinações salvas com sucesso!");
       carregarSubordinacoes();
+    });
+
+    // 🔴 Apagar todos os registros
+    apagarBtn.addEventListener("click", async () => {
+      if (!confirm("⚠️ Tem certeza que deseja apagar TODOS os registros de subordinações?")) return;
+      const snapshot = await getDocs(collection(db, "subordinacoes"));
+      for (const docItem of snapshot.docs) {
+        await deleteDoc(doc(db, "subordinacoes", docItem.id));
+      }
+      tabelaBody.innerHTML = "";
+      alert("🗑️ Todos os registros foram apagados com sucesso!");
     });
 
     // Carregar ao abrir
