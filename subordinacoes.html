@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subordinações - Controle de Mochilas</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      background: #121212;
+      color: #eee;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 30px;
+    }
+
+    .container {
+      background: #1e1e1e;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      padding: 30px;
+      width: 100%;
+      max-width: 1100px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      text-align: center;
+      color: #00c4ff;
+      margin-bottom: 25px;
+    }
+
+    .importar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      background: #2a2a2a;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    button {
+      background: #00c4ff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #009ecb;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #333;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: #222;
+      color: #00c4ff;
+    }
+
+    tr:hover {
+      background: #2a2a2a;
+    }
+
+    td[contenteditable="true"] {
+      background: #242424;
+      border-radius: 4px;
+    }
+
+    .acoes {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .btn-salvar {
+      background: #00c46a;
+    }
+
+    .btn-salvar:hover {
+      background: #009f55;
+    }
+
+    .btn-voltar {
+      background: #444;
+      margin-top: 20px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #888;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>📋 Subordinações - Diretor / GRC / CD</h1>
+
+    <div class="importar">
+      <input type="file" id="inputExcel" accept=".xlsx" />
+      <div class="acoes">
+        <button id="importarBtn">📥 Importar Excel</button>
+        <button id="salvarBtn" class="btn-salvar">💾 Salvar Alterações</button>
+      </div>
+    </div>
+
+    <table id="tabelaSub">
+      <thead>
+        <tr>
+          <th>Diretor</th>
+          <th>GRC</th>
+          <th>CD</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <button class="btn-voltar" onclick="window.location.href='index.html'">⬅️ Voltar ao Menu</button>
+
+    <footer>© 2025 - Grupo Petrópolis | Sistema de Controle de Mochilas</footer>
+  </div>
+
+  <!-- Importa biblioteca XLSX.js para ler arquivos Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script>
+    const inputExcel = document.getElementById("inputExcel");
+    const importarBtn = document.getElementById("importarBtn");
+    const salvarBtn = document.getElementById("salvarBtn");
+    const tabelaBody = document.querySelector("#tabelaSub tbody");
+
+    let dadosTabela = [];
+
+    importarBtn.addEventListener("click", () => {
+      const arquivo = inputExcel.files[0];
+      if (!arquivo) {
+        alert("Selecione um arquivo Excel primeiro!");
+        return;
+      }
+
+      const leitor = new FileReader();
+      leitor.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const primeiraAba = workbook.Sheets[workbook.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(primeiraAba, { header: 1 });
+
+        // Limpa tabela anterior
+        tabelaBody.innerHTML = "";
+        dadosTabela = [];
+
+        json.slice(1).forEach(linha => {
+          if (linha.length >= 3) {
+            const [diretor, grc, cd] = linha;
+            dadosTabela.push({ diretor, grc, cd });
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td contenteditable="true">${diretor || ""}</td>
+              <td contenteditable="true">${grc || ""}</td>
+              <td contenteditable="true">${cd || ""}</td>
+            `;
+            tabelaBody.appendChild(tr);
+          }
+        });
+      };
+      leitor.readAsArrayBuffer(arquivo);
+    });
+
+    salvarBtn.addEventListener("click", () => {
+      const linhas = document.querySelectorAll("#tabelaSub tbody tr");
+      const novosDados = [];
+
+      linhas.forEach(tr => {
+        const tds = tr.querySelectorAll("td");
+        novosDados.push({
+          diretor: tds[0].textContent.trim(),
+          grc: tds[1].textContent.trim(),
+          cd: tds[2].textContent.trim()
+        });
+      });
+
+      dadosTabela = novosDados;
+      alert("Alterações salvas com sucesso! ✅");
+      console.log("📊 Dados atuais:", dadosTabela);
+    });
+  </script>
+</body>
+</html>

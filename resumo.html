@@ -5,13 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resumo de Solicitações de Mochilas</title>
 
+  <!-- Estilo Geral -->
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Poppins", sans-serif;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
 
     body {
       background: #121212;
@@ -29,7 +25,7 @@
       box-shadow: 0 0 15px rgba(0,0,0,0.4);
       padding: 30px;
       width: 100%;
-      max-width: 1100px;
+      max-width: 1200px;
     }
 
     h1 {
@@ -103,14 +99,48 @@
       background: #292929;
     }
 
+    .graficos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    canvas {
+      background: #1b1b1b;
+      border-radius: 12px;
+      padding: 15px;
+    }
+
     footer {
       text-align: center;
-      margin-top: 20px;
+      margin-top: 30px;
       color: #888;
       font-size: 0.8rem;
     }
+
+    .back-btn {
+      margin-top: 20px;
+      background: #444;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .back-btn:hover {
+      background: #333;
+    }
+
+    @media (max-width: 900px) {
+      .graficos { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>📊 Resumo de Solicitações de Mochilas</h1>
@@ -129,8 +159,12 @@
         <p>Mochilas Aprovadas</p>
       </div>
       <div class="card">
-        <h2 id="totalCds">0</h2>
-        <p>CDs com Solicitações</p>
+        <h2 id="saldoEstoque">0</h2>
+        <p>Saldo Atual em Estoque</p>
+      </div>
+      <div class="card">
+        <h2 id="diferencaEstoque">0</h2>
+        <p>Diferença (Estoque - Aprovadas)</p>
       </div>
     </div>
 
@@ -144,7 +178,6 @@
         <option value="ADM">ADM</option>
         <option value="Financeiro">Financeiro</option>
       </select>
-
       <input type="text" id="pesquisa" placeholder="🔍 Pesquisar por CD ou Solicitante">
     </div>
 
@@ -162,10 +195,25 @@
       <tbody id="tabelaResumo"></tbody>
     </table>
 
+    <!-- GRÁFICOS -->
+    <div class="graficos">
+      <div>
+        <h3 style="text-align:center; margin-bottom:10px;">📈 Aprovadas x Solicitadas por Diretor</h3>
+        <canvas id="graficoDiretor"></canvas>
+      </div>
+      <div>
+        <h3 style="text-align:center; margin-bottom:10px;">📊 Aprovadas x Solicitadas por GRC</h3>
+        <canvas id="graficoGrc"></canvas>
+      </div>
+    </div>
+
+    <button class="back-btn" onclick="window.location.href='index.html'">⬅️ Voltar ao Menu</button>
+
     <footer>© 2025 - Controle de Mochilas | Grupo Petrópolis</footer>
   </div>
 
-  <!-- 🔥 Firebase -->
+  <!-- 🔥 Firebase + Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
     import { getFirestore, collection, getDocs } 
@@ -187,16 +235,38 @@
     const totalSolicitacoes = document.getElementById('totalSolicitacoes');
     const totalSolicitadas = document.getElementById('totalSolicitadas');
     const totalAprovadas = document.getElementById('totalAprovadas');
-    const totalCds = document.getElementById('totalCds');
+    const saldoEstoque = document.getElementById('saldoEstoque');
+    const diferencaEstoque = document.getElementById('diferencaEstoque');
     const filtroCargo = document.getElementById('filtroCargo');
     const pesquisa = document.getElementById('pesquisa');
-
     let dadosGerais = [];
 
     async function carregarResumo() {
-      const snapshot = await getDocs(collection(db, "solicitacoes"));
-      dadosGerais = snapshot.docs.map(d => d.data());
+      const solicitacoesSnap = await getDocs(collection(db, "solicitacoes"));
+      const estoqueSnap = await getDocs(collection(db, "estoque_mochilas"));
+
+      dadosGerais = solicitacoesSnap.docs.map(d => d.data());
       atualizarResumo(dadosGerais);
+
+      // 🔹 Calcular total do estoque (Entradas - Saídas)
+      let entradas = 0, saidas = 0;
+      estoqueSnap.forEach(doc => {
+        const d = doc.data();
+        if (d.tipo === "Entrada") entradas += d.quantidade;
+        if (d.tipo === "Saída") saidas += d.quantidade;
+      });
+      const totalEstoque = entradas - saidas;
+
+      // 🔹 Total aprovado
+      let totalAprov = 0;
+      dadosGerais.forEach(d => totalAprov += d.qtdAprovada || 0);
+
+      // Atualizar cards
+      saldoEstoque.textContent = totalEstoque;
+      diferencaEstoque.textContent = totalEstoque - totalAprov;
+
+      // Gerar gráficos
+      gerarGraficos(dadosGerais);
     }
 
     function atualizarResumo(dados) {
@@ -210,7 +280,6 @@
         totalQtdSolic += d.qtdSolicitada || 0;
         totalQtdAprov += d.qtdAprovada || 0;
         cdsSet.add(d.cd);
-
         const linha = document.createElement('tr');
         linha.innerHTML = `
           <td>${d.cd}</td>
@@ -226,7 +295,6 @@
       totalSolicitacoes.textContent = totalSolic;
       totalSolicitadas.textContent = totalQtdSolic;
       totalAprovadas.textContent = totalQtdAprov;
-      totalCds.textContent = cdsSet.size;
     }
 
     filtroCargo.addEventListener('change', () => {
@@ -243,6 +311,76 @@
       );
       atualizarResumo(filtrados);
     });
+
+    function gerarGraficos(dados) {
+      // Agrupar por diretor e GRC
+      const porDiretor = {};
+      const porGrc = {};
+
+      dados.forEach(d => {
+        const diretor = d.diretor || "Não definido";
+        const grc = d.grc || "Não definido";
+
+        if (!porDiretor[diretor]) porDiretor[diretor] = { solicitadas: 0, aprovadas: 0 };
+        if (!porGrc[grc]) porGrc[grc] = { solicitadas: 0, aprovadas: 0 };
+
+        porDiretor[diretor].solicitadas += d.qtdSolicitada || 0;
+        porDiretor[diretor].aprovadas += d.qtdAprovada || 0;
+
+        porGrc[grc].solicitadas += d.qtdSolicitada || 0;
+        porGrc[grc].aprovadas += d.qtdAprovada || 0;
+      });
+
+      // 🔹 Diretor
+      new Chart(document.getElementById("graficoDiretor"), {
+        type: "bar",
+        data: {
+          labels: Object.keys(porDiretor),
+          datasets: [
+            {
+              label: "Solicitadas",
+              data: Object.values(porDiretor).map(v => v.solicitadas),
+              backgroundColor: "#00c4ff",
+            },
+            {
+              label: "Aprovadas",
+              data: Object.values(porDiretor).map(v => v.aprovadas),
+              backgroundColor: "#00c46a",
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: "#fff" } } },
+          scales: { x: { ticks: { color: "#ccc" } }, y: { ticks: { color: "#ccc" } } }
+        }
+      });
+
+      // 🔹 GRC
+      new Chart(document.getElementById("graficoGrc"), {
+        type: "bar",
+        data: {
+          labels: Object.keys(porGrc),
+          datasets: [
+            {
+              label: "Solicitadas",
+              data: Object.values(porGrc).map(v => v.solicitadas),
+              backgroundColor: "#f9a826",
+            },
+            {
+              label: "Aprovadas",
+              data: Object.values(porGrc).map(v => v.aprovadas),
+              backgroundColor: "#9333ea",
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: "#fff" } } },
+          scales: { x: { ticks: { color: "#ccc" } }, y: { ticks: { color: "#ccc" } } }
+        }
+      });
+    }
 
     carregarResumo();
   </script>
