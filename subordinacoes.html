@@ -64,17 +64,21 @@
     }
 
     button:hover { background: #009ecb; }
-
     .btn-salvar { background: #00c46a; }
     .btn-salvar:hover { background: #009f55; }
-
     .btn-apagar { background: #dc3545; }
     .btn-apagar:hover { background: #b02a37; }
+
+    .tabela-container {
+      max-height: 600px; /* cerca de 200 linhas */
+      overflow-y: auto;
+      border: 1px solid #333;
+      border-radius: 8px;
+    }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
     }
 
     th, td {
@@ -83,14 +87,16 @@
       text-align: left;
     }
 
-    th { background: #222; color: #00c4ff; }
+    th {
+      background: #222;
+      color: #00c4ff;
+      position: sticky;
+      top: 0;
+      cursor: pointer;
+    }
 
     tr:hover { background: #2a2a2a; }
-
-    td[contenteditable="true"] {
-      background: #242424;
-      border-radius: 4px;
-    }
+    td[contenteditable="true"] { background: #242424; border-radius: 4px; }
 
     .acoes {
       display: flex;
@@ -110,6 +116,15 @@
       color: #888;
       font-size: 0.8rem;
     }
+
+    th.sorted-asc::after {
+      content: " ▲";
+      color: #00c4ff;
+    }
+    th.sorted-desc::after {
+      content: " ▼";
+      color: #00c4ff;
+    }
   </style>
 </head>
 <body>
@@ -126,19 +141,20 @@
       </div>
     </div>
 
-    <table id="tabelaSub">
-      <thead>
-        <tr>
-          <th>Diretor</th>
-          <th>GRC</th>
-          <th>CD</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div class="tabela-container">
+      <table id="tabelaSub">
+        <thead>
+          <tr>
+            <th data-col="diretor">Diretor</th>
+            <th data-col="grc">GRC</th>
+            <th data-col="cd">CD</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
     <button class="btn-voltar" onclick="window.location.href='index.html'">⬅️ Voltar ao Menu</button>
-
     <footer>© 2025 - Grupo Petrópolis | Sistema de Controle de Mochilas</footer>
   </div>
 
@@ -152,7 +168,6 @@
       getFirestore, collection, getDocs, addDoc, deleteDoc, doc 
     } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-    // 🔥 CONFIGURAÇÃO FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyBcXTj40CI4fEJOGp2T_ghh3Wwpki4OnW0",
       authDomain: "salasdereunioes-eb91a.firebaseapp.com",
@@ -172,16 +187,19 @@
     const inputExcel = document.getElementById("inputExcel");
 
     let dadosTabela = [];
+    let ordem = { coluna: null, asc: true };
 
-    // 🟦 Carregar subordinações salvas
+    // 🟦 Carregar subordinações
     async function carregarSubordinacoes() {
       tabelaBody.innerHTML = "";
       const snapshot = await getDocs(collection(db, "subordinacoes"));
-      dadosTabela = [];
+      dadosTabela = snapshot.docs.map(doc => doc.data());
+      preencherTabela(dadosTabela);
+    }
 
-      snapshot.forEach(docItem => {
-        const d = docItem.data();
-        dadosTabela.push(d);
+    function preencherTabela(dados) {
+      tabelaBody.innerHTML = "";
+      dados.forEach(d => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td contenteditable="true">${d.diretor}</td>
@@ -196,7 +214,6 @@
     importarBtn.addEventListener("click", () => {
       const arquivo = inputExcel.files[0];
       if (!arquivo) return alert("Selecione um arquivo Excel primeiro!");
-
       const leitor = new FileReader();
       leitor.onload = (e) => {
         const data = new Uint8Array(e.target.result);
@@ -204,67 +221,65 @@
         const planilha = workbook.Sheets[workbook.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json(planilha, { header: 1 });
 
-        tabelaBody.innerHTML = "";
         dadosTabela = [];
-
         json.slice(1).forEach(linha => {
           if (linha.length >= 3) {
             const [diretor, grc, cd] = linha;
             dadosTabela.push({ diretor, grc, cd });
-
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td contenteditable="true">${diretor || ""}</td>
-              <td contenteditable="true">${grc || ""}</td>
-              <td contenteditable="true">${cd || ""}</td>
-            `;
-            tabelaBody.appendChild(tr);
           }
         });
-
+        preencherTabela(dadosTabela);
         alert("✅ Dados importados! Clique em 'Salvar Alterações' para gravar.");
       };
-
       leitor.readAsArrayBuffer(arquivo);
     });
 
-    // 🟢 Salvar alterações no Firestore
+    // 💾 Salvar
     salvarBtn.addEventListener("click", async () => {
       const linhas = document.querySelectorAll("#tabelaSub tbody tr");
-
-      // Apagar os dados antigos antes de gravar os novos
       const snapshot = await getDocs(collection(db, "subordinacoes"));
-      for (const docItem of snapshot.docs) {
-        await deleteDoc(doc(db, "subordinacoes", docItem.id));
-      }
+      for (const docItem of snapshot.docs) await deleteDoc(doc(db, "subordinacoes", docItem.id));
 
       for (const tr of linhas) {
         const tds = tr.querySelectorAll("td");
         const diretor = tds[0].textContent.trim();
         const grc = tds[1].textContent.trim();
         const cd = tds[2].textContent.trim();
-
-        if (diretor && grc && cd) {
-          await addDoc(collection(db, "subordinacoes"), { diretor, grc, cd });
-        }
+        if (diretor && grc && cd) await addDoc(collection(db, "subordinacoes"), { diretor, grc, cd });
       }
 
       alert("✅ Subordinações salvas com sucesso!");
       carregarSubordinacoes();
     });
 
-    // 🔴 Apagar todos os registros
+    // 🗑️ Apagar todos
     apagarBtn.addEventListener("click", async () => {
-      if (!confirm("⚠️ Tem certeza que deseja apagar TODOS os registros de subordinações?")) return;
+      if (!confirm("⚠️ Deseja realmente apagar TODOS os registros?")) return;
       const snapshot = await getDocs(collection(db, "subordinacoes"));
-      for (const docItem of snapshot.docs) {
-        await deleteDoc(doc(db, "subordinacoes", docItem.id));
-      }
+      for (const docItem of snapshot.docs) await deleteDoc(doc(db, "subordinacoes", docItem.id));
       tabelaBody.innerHTML = "";
-      alert("🗑️ Todos os registros foram apagados com sucesso!");
+      alert("🗑️ Todos os registros foram apagados!");
     });
 
-    // Carregar ao abrir
+    // 🔽 Ordenar por coluna
+    document.querySelectorAll("th").forEach(th => {
+      th.addEventListener("click", () => {
+        const coluna = th.dataset.col;
+        if (ordem.coluna === coluna) ordem.asc = !ordem.asc;
+        else { ordem.coluna = coluna; ordem.asc = true; }
+
+        document.querySelectorAll("th").forEach(h => h.classList.remove("sorted-asc", "sorted-desc"));
+        th.classList.add(ordem.asc ? "sorted-asc" : "sorted-desc");
+
+        const sorted = [...dadosTabela].sort((a, b) => {
+          const valA = a[coluna].toLowerCase();
+          const valB = b[coluna].toLowerCase();
+          return ordem.asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        });
+        preencherTabela(sorted);
+      });
+    });
+
     carregarSubordinacoes();
   </script>
 </body>
