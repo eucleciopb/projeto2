@@ -3,371 +3,98 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Controle de Solicitações de Mochilas</title>
+  <title>Menu - Controle de Mochilas</title>
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
 
     body {
-      background: #121212;
-      color: #333;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: white;
       display: flex;
+      flex-direction: column;
       justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    .container {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
-      padding: 30px;
-      width: 100%;
-      max-width: 1100px;
-      animation: fadeIn 0.6s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      align-items: center;
+      height: 100vh;
+      text-align: center;
     }
 
     h1 {
-      text-align: center;
-      color: #222;
-      margin-bottom: 20px;
-      font-size: 1.8rem;
+      font-size: 2rem;
+      margin-bottom: 40px;
+      text-shadow: 0 0 10px rgba(0, 255, 255, 0.4);
     }
 
-    form {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      margin-bottom: 20px;
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 90%;
+      max-width: 400px;
     }
-
-    label {
-      font-weight: 600;
-      color: #444;
-      font-size: 0.9rem;
-    }
-
-    input, select, textarea {
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      transition: 0.2s;
-      width: 100%;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: #007bff;
-      outline: none;
-      box-shadow: 0 0 5px rgba(0,123,255,0.3);
-    }
-
-    .full { grid-column: span 3; }
 
     button {
-      background: #007bff;
-      color: white;
-      padding: 12px;
+      background: #00b4d8;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 1.1rem;
+      color: white;
       font-weight: 600;
       cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       transition: 0.3s;
-    }
-
-    button:hover { background: #0056b3; }
-
-    .search-box {
-      margin-bottom: 10px;
-      text-align: right;
-    }
-
-    .search-box input {
-      padding: 8px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 0.9rem;
-      width: 250px;
-    }
-
-    table {
       width: 100%;
-      border-collapse: collapse;
     }
 
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-      font-size: 0.9rem;
+    button:hover {
+      transform: scale(1.05);
+      background: #0077b6;
     }
 
-    th { background: #f7f7f7; font-weight: 600; }
-
-    tr:hover { background: #f1f1f1; }
-
-    .edit-btn, .delete-btn {
-      border: none;
-      border-radius: 6px;
-      padding: 6px 10px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      transition: 0.3s;
-      color: white;
-      font-weight: 600;
+    .novo {
+      background: #00c46a;
     }
-
-    .edit-btn { background: #28a745; }
-    .edit-btn:hover { background: #218838; }
-    .delete-btn { background: #dc3545; }
-    .delete-btn:hover { background: #b02a37; }
+    .novo:hover {
+      background: #009f55;
+    }
 
     footer {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 0.8rem;
-      color: #666;
+      position: absolute;
+      bottom: 15px;
+      font-size: 0.85rem;
+      color: #aaa;
     }
 
-    @media (max-width: 800px) {
-      form { grid-template-columns: 1fr; }
-      .full { grid-column: span 1; }
-      .search-box { text-align: center; }
+    @media (max-width: 500px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+      button {
+        font-size: 1rem;
+        padding: 12px;
+      }
     }
   </style>
 </head>
 <body>
+  <h1>🎒 Controle de Solicitações de Mochilas</h1>
 
-  <div class="container">
-    <h1>🎒 Controle de Solicitações de Mochilas</h1>
+  <div class="menu">
+    <button class="novo" onclick="window.location.href='index2.html'">
+      ➕ Registrar nova mochila
+    </button>
 
-    <form id="formMochila">
-      <div>
-        <label for="cd">Centro de Distribuição (CD)</label>
-        <select id="cd" required>
-          <option value="">Selecione...</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="nome">Nome do Solicitante</label>
-        <input type="text" id="nome" required placeholder="Ex: João Silva">
-      </div>
-
-      <div>
-        <label for="cargo">Cargo</label>
-        <select id="cargo" required>
-          <option value="">Selecione...</option>
-          <option value="AC">AC</option>
-          <option value="SV">SV</option>
-          <option value="GG">GG</option>
-          <option value="GV">GV</option>
-          <option value="ADM">ADM</option>
-          <option value="Financeiro">Financeiro</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="tipo">Tipo de Solicitação</label>
-        <select id="tipo" required>
-          <option value="Mochila">Mochila</option>
-        </select>
-      </div>
-
-      <div>
-        <label for="data">Data da Solicitação</label>
-        <input type="date" id="data" required>
-      </div>
-
-      <div>
-        <label for="qtdSolicitada">Total de Mochilas Solicitadas</label>
-        <input type="number" id="qtdSolicitada" min="1" required>
-      </div>
-
-      <div>
-        <label for="qtdAprovada">Total de Mochilas Aprovadas</label>
-        <input type="number" id="qtdAprovada" min="0" required>
-      </div>
-
-      <div class="full">
-        <label for="obs">Observações</label>
-        <textarea id="obs" rows="2" placeholder="Informações adicionais" required></textarea>
-      </div>
-
-      <div class="full">
-        <button type="submit">Salvar Solicitação</button>
-      </div>
-    </form>
-
-    <div class="search-box">
-      <input type="text" id="pesquisa" placeholder="🔍 Pesquisar por CD ou nome...">
-    </div>
-
-    <table id="tabelaMochilas">
-      <thead>
-        <tr>
-          <th>CD</th>
-          <th>Solicitante</th>
-          <th>Cargo</th>
-          <th>Tipo</th>
-          <th>Data</th>
-          <th>Solicitadas</th>
-          <th>Aprovadas</th>
-          <th>Obs</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <footer>© 2025 - Controle de Mochilas</footer>
+    <button onclick="window.location.href='resumo.html'">
+      📊 Ver resumo das solicitações
+    </button>
   </div>
 
-  <!-- 🔥 Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where } 
-      from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBcXTj40CI4fEJOGp2T_ghh3Wwpki4OnW0",
-      authDomain: "salasdereunioes-eb91a.firebaseapp.com",
-      projectId: "salasdereunioes-eb91a",
-      storageBucket: "salasdereunioes-eb91a.firebasestorage.app",
-      messagingSenderId: "961898084996",
-      appId: "1:961898084996:web:535185ceb0860e1e06e0d1"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const cds = [
-      "Alagoinhas","Andradina","Angra dos Reis","Aparecida de Goiânia","Araçatuba","Arapiraca","Araraquara",
-      "Balsas","Barbalha","Barra do Garca","Barreiras","Barretos","Barueri","Bauru","Belém","Boa Vista","Boituva",
-      "Bom Jesus da Lapa","Brumado","Cachoeiro de Itapemirim","Camaçari","Campina Grande","Campinas","Campo Grande MS",
-      "Campo Grande RJ","Campos dos Goytacazes","Caraguatatuba","Cariacica","Carpina","Caruaru","Cascavel","Catanduva",
-      "Caucaia","Caxias","Coimbra","Conde","Conselheiro Lafaiete","Contagem","Coxim","Cuiabá","Divinópolis","Dourados",
-      "Duque de Caxias","Eunápolis","Eusebio","Feira de Santana","Fernandópolis","Floriano","Garanhuns","Governador Valadares",
-      "Guarujá","Guarulhos Taboão","Iguatu","Imperatriz","Interlagos","Iporá","Irece","Itabaiana","Itaberaba","Itabuna",
-      "Itacoatiara","Itapeva","Itapissuma","Itumbiara","Iuna","Jaboatão dos Guararapes","Jacobina","Jaguaré","Jequié",
-      "Juazeiro","Juiz de Fora","Jundiaí","Londrina","Macaiba","Maceió","Manaus","Marília","Mogi-Mirim","Montes Claros",
-      "Mossoró","Muriaé","Nossa Senhora do Socorro","Nova Friburgo","Palhoça","Paranaíba","Parintins","Parnaiba","Passos",
-      "Patos","Paulo Afonso","Petrolina","Petrópolis","Picos","Piracicaba","Poços de Caldas","Porto Ferreira","Porto Velho",
-      "Pouso Alegre","Praia Grande","Presidente Prudente","Recife","Registro","Ribeirão Preto","Rio Branco","Rio das Ostras",
-      "Rio Verde","Rondonópolis","Salto","Salvador","Salvador Leste","Santa Inês","Santa Teresa","Santo Antonio de Jesus",
-      "São Bernardo","São Cristovão","São Gonçalo","São João de Meriti","São José do Rio Preto","São José dos Campos",
-      "São José dos Pinhais","São Luis","São Mateus","São Pedro da Aldeia","Sapucaia do Sul","Serra Talhada","Serrinha",
-      "Sete Lagoas","Sinop","Sobral","Sousa","Suzano","Tabatinga","Taboão da Serra","Taguatinga","Taubaté","Teixeira de Freitas",
-      "Teresina","Três Lagoas","Uberaba","Uberlândia","Varginha","Vila Guilherme","Vitória da Conquista","Volta Redonda"
-    ];
-
-    const cdSelect = document.getElementById('cd');
-    cds.forEach(cd => {
-      const opt = document.createElement('option');
-      opt.value = cd;
-      opt.textContent = "CD - " + cd;
-      cdSelect.appendChild(opt);
-    });
-
-    const form = document.getElementById('formMochila');
-    const tabela = document.querySelector('#tabelaMochilas tbody');
-    const pesquisa = document.getElementById('pesquisa');
-    let editandoId = null;
-
-    async function carregar() {
-      const snapshot = await getDocs(collection(db, "solicitacoes"));
-      tabela.innerHTML = "";
-      snapshot.forEach(docItem => addLinha(docItem.id, docItem.data()));
-    }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const dados = {
-        cd: cdSelect.value,
-        nome: nome.value.trim(),
-        cargo: cargo.value,
-        tipo: tipo.value,
-        data: data.value,
-        qtdSolicitada: parseInt(qtdSolicitada.value),
-        qtdAprovada: parseInt(qtdAprovada.value),
-        obs: obs.value.trim()
-      };
-
-      if (Object.values(dados).some(v => v === "" || v === null || isNaN(v) && typeof v !== "string")) {
-        alert("Todos os campos são obrigatórios!");
-        return;
-      }
-
-      const snapshot = await getDocs(collection(db, "solicitacoes"));
-      const duplicado = snapshot.docs.find(d =>
-        d.data().cd === dados.cd &&
-        d.data().data === dados.data &&
-        d.data().nome.toLowerCase() === dados.nome.toLowerCase()
-      );
-      if (duplicado && !editandoId) {
-        alert("Essa solicitação já existe!");
-        return;
-      }
-
-      if (editandoId) {
-        await updateDoc(doc(db, "solicitacoes", editandoId), dados);
-        editandoId = null;
-      } else {
-        await addDoc(collection(db, "solicitacoes"), dados);
-      }
-
-      form.reset();
-      carregar();
-    });
-
-    function addLinha(id, d) {
-      const linha = document.createElement('tr');
-      linha.innerHTML = `
-        <td>${d.cd}</td>
-        <td>${d.nome}</td>
-        <td>${d.cargo}</td>
-        <td>${d.tipo}</td>
-        <td>${d.data}</td>
-        <td>${d.qtdSolicitada}</td>
-        <td>${d.qtdAprovada}</td>
-        <td>${d.obs}</td>
-        <td>
-          <button class="edit-btn">Editar</button>
-          <button class="delete-btn">Excluir</button>
-        </td>
-      `;
-      linha.querySelector('.delete-btn').addEventListener('click', async () => {
-        await deleteDoc(doc(db, "solicitacoes", id));
-        carregar();
-      });
-      linha.querySelector('.edit-btn').addEventListener('click', () => {
-        cdSelect.value = d.cd;
-        nome.value = d.nome;
-        cargo.value = d.cargo;
-        tipo.value = d.tipo;
-        data.value = d.data;
-        qtdSolicitada.value = d.qtdSolicitada;
-        qtdAprovada.value = d.qtdAprovada;
-        obs.value = d.obs;
-        editandoId = id;
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      });
-      tabela.appendChild(linha);
-    }
-
-    pesquisa.addEventListener('input', () => {
-      const termo = pesquisa.value.toLowerCase();
-      document.querySelectorAll('#tabelaMochilas tbody tr').forEach(tr => {
-        tr.style.display = tr.textContent.toLowerCase().includes(termo) ? "" : "none";
-      });
-    });
-
-    carregar();
-  </script>
+  <footer>© 2025 - Grupo Petrópolis | Sistema de Controle de Mochilas</footer>
 </body>
 </html>
