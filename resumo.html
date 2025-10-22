@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resumo de Solicitações de Mochilas</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      background: #121212;
+      color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background: #1e1e1e;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.4);
+      padding: 30px;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #fff;
+      margin-bottom: 25px;
+      font-size: 1.8rem;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: #2a2a2a;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .card h2 {
+      font-size: 2rem;
+      color: #00c4ff;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-top: 5px;
+    }
+
+    .filtros {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    select, input {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      background: #2a2a2a;
+      color: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #333;
+    }
+
+    th {
+      background: #222;
+      color: #00c4ff;
+    }
+
+    tr:hover {
+      background: #292929;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #888;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 Resumo de Solicitações de Mochilas</h1>
+
+    <div class="cards">
+      <div class="card">
+        <h2 id="totalSolicitacoes">0</h2>
+        <p>Total de Solicitações</p>
+      </div>
+      <div class="card">
+        <h2 id="totalSolicitadas">0</h2>
+        <p>Mochilas Solicitadas</p>
+      </div>
+      <div class="card">
+        <h2 id="totalAprovadas">0</h2>
+        <p>Mochilas Aprovadas</p>
+      </div>
+      <div class="card">
+        <h2 id="totalCds">0</h2>
+        <p>CDs com Solicitações</p>
+      </div>
+    </div>
+
+    <div class="filtros">
+      <select id="filtroCargo">
+        <option value="">Todos os Cargos</option>
+        <option value="AC">AC</option>
+        <option value="SV">SV</option>
+        <option value="GG">GG</option>
+        <option value="GV">GV</option>
+        <option value="ADM">ADM</option>
+        <option value="Financeiro">Financeiro</option>
+      </select>
+
+      <input type="text" id="pesquisa" placeholder="🔍 Pesquisar por CD ou Solicitante">
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>CD</th>
+          <th>Solicitante</th>
+          <th>Cargo</th>
+          <th>Data</th>
+          <th>Solicitadas</th>
+          <th>Aprovadas</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaResumo"></tbody>
+    </table>
+
+    <footer>© 2025 - Controle de Mochilas | Grupo Petrópolis</footer>
+  </div>
+
+  <!-- 🔥 Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } 
+      from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBcXTj40CI4fEJOGp2T_ghh3Wwpki4OnW0",
+      authDomain: "salasdereunioes-eb91a.firebaseapp.com",
+      projectId: "salasdereunioes-eb91a",
+      storageBucket: "salasdereunioes-eb91a.firebasestorage.app",
+      messagingSenderId: "961898084996",
+      appId: "1:961898084996:web:535185ceb0860e1e06e0d1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const tabela = document.getElementById('tabelaResumo');
+    const totalSolicitacoes = document.getElementById('totalSolicitacoes');
+    const totalSolicitadas = document.getElementById('totalSolicitadas');
+    const totalAprovadas = document.getElementById('totalAprovadas');
+    const totalCds = document.getElementById('totalCds');
+    const filtroCargo = document.getElementById('filtroCargo');
+    const pesquisa = document.getElementById('pesquisa');
+
+    let dadosGerais = [];
+
+    async function carregarResumo() {
+      const snapshot = await getDocs(collection(db, "solicitacoes"));
+      dadosGerais = snapshot.docs.map(d => d.data());
+      atualizarResumo(dadosGerais);
+    }
+
+    function atualizarResumo(dados) {
+      tabela.innerHTML = "";
+      let totalSolic = dados.length;
+      let totalQtdSolic = 0;
+      let totalQtdAprov = 0;
+      let cdsSet = new Set();
+
+      dados.forEach(d => {
+        totalQtdSolic += d.qtdSolicitada || 0;
+        totalQtdAprov += d.qtdAprovada || 0;
+        cdsSet.add(d.cd);
+
+        const linha = document.createElement('tr');
+        linha.innerHTML = `
+          <td>${d.cd}</td>
+          <td>${d.nome}</td>
+          <td>${d.cargo}</td>
+          <td>${d.data}</td>
+          <td>${d.qtdSolicitada}</td>
+          <td>${d.qtdAprovada}</td>
+        `;
+        tabela.appendChild(linha);
+      });
+
+      totalSolicitacoes.textContent = totalSolic;
+      totalSolicitadas.textContent = totalQtdSolic;
+      totalAprovadas.textContent = totalQtdAprov;
+      totalCds.textContent = cdsSet.size;
+    }
+
+    filtroCargo.addEventListener('change', () => {
+      const filtro = filtroCargo.value;
+      const filtrados = filtro ? dadosGerais.filter(d => d.cargo === filtro) : dadosGerais;
+      atualizarResumo(filtrados);
+    });
+
+    pesquisa.addEventListener('input', () => {
+      const termo = pesquisa.value.toLowerCase();
+      const filtrados = dadosGerais.filter(d =>
+        d.cd.toLowerCase().includes(termo) ||
+        d.nome.toLowerCase().includes(termo)
+      );
+      atualizarResumo(filtrados);
+    });
+
+    carregarResumo();
+  </script>
+</body>
+</html>
