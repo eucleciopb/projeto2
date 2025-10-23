@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -75,6 +76,7 @@
     footer {text-align: center; margin-top: 10px; color: #777; font-size: 0.8rem;}
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>📋 Subordinações - Diretor / GRC / CD</h1>
@@ -118,6 +120,7 @@
     <footer>© 2025 - Grupo Petrópolis | Sistema de Controle de Mochilas</footer>
   </div>
 
+  <!-- FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
     import { getFirestore, collection, getDocs, setDoc, deleteDoc, doc } 
@@ -193,37 +196,46 @@
       }
     };
 
-    document.getElementById("btnImportar").addEventListener("click", async () => {
+    // ✅ Importar e salvar automaticamente
+    document.getElementById("btnImportar").addEventListener("click", () => {
       const file = document.getElementById("inputExcel").files[0];
-      if (!file) return alert("Selecione um arquivo Excel.");
+      if (!file) return alert("Selecione um arquivo Excel antes de importar.");
+
       const reader = new FileReader();
-      reader.onload = async (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const novosDados = XLSX.utils.sheet_to_json(sheet);
 
-        // Evita duplicação: se já existe CD, atualiza; se não, adiciona
-        const cdsExistentes = subordinacoes.map(s => s.cd.trim().toLowerCase());
-        novosDados.forEach(novo => {
-          const cdLower = novo.cd.trim().toLowerCase();
-          const existenteIndex = cdsExistentes.indexOf(cdLower);
-          if (existenteIndex >= 0) {
-            subordinacoes[existenteIndex] = { ...subordinacoes[existenteIndex], ...novo };
-          } else {
-            subordinacoes.push(novo);
+      reader.onload = async function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const novosDados = XLSX.utils.sheet_to_json(sheet);
+
+          const cdsExistentes = subordinacoes.map(s => s.cd.trim().toLowerCase());
+          novosDados.forEach(novo => {
+            if (!novo.cd) return; // ignora linhas sem CD
+            const cdLower = novo.cd.trim().toLowerCase();
+            const existenteIndex = cdsExistentes.indexOf(cdLower);
+            if (existenteIndex >= 0) {
+              subordinacoes[existenteIndex] = { ...subordinacoes[existenteIndex], ...novo };
+            } else {
+              subordinacoes.push(novo);
+            }
+          });
+
+          // Salvar automaticamente no Firestore
+          for (const s of subordinacoes) {
+            await setDoc(doc(db, "subordinacoes", s.cd), s);
           }
-        });
 
-        // Salva automaticamente no Firestore
-        for (const s of subordinacoes) {
-          await setDoc(doc(db, "subordinacoes", s.cd), s);
+          alert("✅ Importação concluída e dados salvos no Firestore!");
+          atualizarTabela(subordinacoes);
+          preencherFiltros();
+        } catch (err) {
+          console.error(err);
+          alert("❌ Erro ao importar o Excel. Verifique o formato do arquivo.");
         }
-
-        alert("Importação concluída e dados salvos com sucesso!");
-        atualizarTabela(subordinacoes);
-        preencherFiltros();
       };
+
       reader.readAsArrayBuffer(file);
     });
 
