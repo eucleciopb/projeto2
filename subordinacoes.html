@@ -3,139 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subordinações 2 - Diretor / GRC / CD</title>
+  <title>Subordinações - Controle de CDs</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    * {margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif;}
     body {
-      background: #121212;
-      color: #f5f5f5;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 30px;
+      font-family: "Poppins", sans-serif;
+      background-color: #fff;
+      color: #333;
+      margin: 0;
+      padding: 20px;
     }
-    .container {
-      background: #1e1e1e;
-      padding: 30px;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 1100px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.4);
-      position: relative;
-    }
-    h1 {text-align: center; color: #4cc9f0; margin-bottom: 10px;}
-    .cards {display: flex; justify-content: center; margin-bottom: 20px;}
-    .card {
-      background: #2a2a2a;
-      border-radius: 12px;
-      padding: 15px 30px;
+    h1 {
       text-align: center;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      color: #0066cc;
+      margin-bottom: 20px;
     }
-    .card h2 {color: #00c4ff; font-size: 2rem;}
-    .card p {color: #aaa; font-size: 0.9rem;}
-    .topo {
-      display: flex; flex-wrap: wrap;
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 15px;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+    input[type="file"], select, input[type="text"] {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
     button {
-      padding: 10px 20px;
-      border: none; border-radius: 8px;
-      cursor: pointer; font-weight: 600;
-      color: #fff; transition: 0.3s;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+      color: white;
     }
-    .importar {background: #0077b6;}
-    .apagar {background: #ef233c;}
-    .voltar {background: #444; margin-top: 15px;}
-    button:hover {opacity: 0.9;}
-    .filtros {
-      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
-      margin-bottom: 10px;
+    .importar { background-color: #0077b6; }
+    .apagar { background-color: #d62828; }
+    .voltar { background-color: #666; }
+    button:hover { opacity: 0.8; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
     }
-    select, input[type=text] {
-      background: #2a2a2a; color: #fff; border: none;
-      padding: 8px 12px; border-radius: 8px;
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
     }
-    table {width: 100%; border-collapse: collapse; margin-top: 10px;}
-    th, td {padding: 10px; text-align: left; border-bottom: 1px solid #333;}
-    th {background: #222; color: #00c4ff;}
-    tr:hover {background: #292929;}
+    th {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
     td button {
-      background: #00b4d8; border: none;
-      padding: 6px 12px; border-radius: 6px;
-      font-size: 0.8rem; color: #fff;
-      margin-right: 6px;
+      padding: 4px 10px;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      color: #fff;
+      margin-right: 4px;
     }
-    td button.excluir {background: #ef476f;}
-    .tabela-container {max-height: 500px; overflow-y: auto; margin-bottom: 20px;}
-    footer {text-align: center; margin-top: 10px; color: #777; font-size: 0.8rem;}
-    /* Toasts */
+    .editar { background-color: #2a9d8f; }
+    .excluir { background-color: #e63946; }
+    .tabela-container {
+      max-height: 450px;
+      overflow-y: auto;
+    }
+    .info {
+      margin-top: 15px;
+      font-weight: 600;
+    }
     .toast {
       position: fixed;
       top: 20px;
       right: 20px;
       background: #333;
       color: #fff;
-      padding: 12px 18px;
-      border-radius: 8px;
+      padding: 10px 16px;
+      border-radius: 6px;
       opacity: 0;
-      pointer-events: none;
-      transition: 0.4s ease;
-      z-index: 999;
+      transition: 0.4s;
+      z-index: 1000;
     }
-    .toast.show {opacity: 1; pointer-events: auto; transform: translateY(0);}
-    .toast.success {background: #00b894;}
-    .toast.error {background: #d63031;}
+    .toast.show {
+      opacity: 1;
+    }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>📋 Subordinações - Diretor / GRC / CD</h1>
+  <h1>📋 Subordinações - Diretor / GRC / CD</h1>
 
-    <div class="cards">
-      <div class="card">
-        <h2 id="totalCDs">0</h2>
-        <p>Total de CDs Cadastrados</p>
-      </div>
-    </div>
-
-    <div class="topo">
-      <input type="file" id="inputExcel" accept=".xlsx, .xls">
-      <div>
-        <button class="importar" id="btnImportar">📥 Importar Excel</button>
-        <button class="apagar" id="btnApagar">🗑️ Apagar Todos</button>
-      </div>
-    </div>
-
-    <div class="filtros">
-      <select id="filtroDiretor"><option value="">Todos os Diretores</option></select>
-      <select id="filtroGrc"><option value="">Todos os GRCs</option></select>
-      <input type="text" id="pesquisa" placeholder="🔍 Pesquisar CD...">
-    </div>
-
-    <div class="tabela-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Diretor</th>
-            <th>GRC</th>
-            <th>CD</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tabelaSub"></tbody>
-      </table>
-    </div>
-
-    <button class="voltar" onclick="window.location.href='index.html'">⬅️ Voltar ao Menu</button>
-    <footer>© 2025 - Grupo Petrópolis | Sistema de Controle de Mochilas</footer>
+  <div class="top-bar">
+    <input type="file" id="inputExcel" accept=".xlsx, .xls">
+    <button class="importar" id="btnImportar">📥 Importar Excel</button>
+    <button class="apagar" id="btnApagar">🗑️ Apagar Todos</button>
+    <button class="voltar" onclick="window.location.href='index.html'">⬅️ Voltar</button>
   </div>
+
+  <div>
+    <select id="filtroDiretor"><option value="">Todos os Diretores</option></select>
+    <select id="filtroGrc"><option value="">Todos os GRCs</option></select>
+    <input type="text" id="pesquisa" placeholder="Pesquisar CD...">
+  </div>
+
+  <div class="tabela-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Diretor</th>
+          <th>GRC</th>
+          <th>CD</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaSub"></tbody>
+    </table>
+  </div>
+
+  <p class="info">Total de CDs cadastrados: <span id="totalCDs">0</span></p>
 
   <div id="toast" class="toast"></div>
 
@@ -166,10 +158,11 @@
 
     let subordinacoes = [];
 
-    function showToast(msg, type="success") {
-      toast.textContent = msg;
-      toast.className = `toast show ${type}`;
-      setTimeout(() => toast.className = "toast", 3000);
+    function toastMsg(texto, cor="#2a9d8f") {
+      toast.textContent = texto;
+      toast.style.background = cor;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2500);
     }
 
     async function carregarSubordinacoes() {
@@ -181,90 +174,75 @@
 
     function atualizarTabela(lista) {
       tabela.innerHTML = "";
-      lista.forEach((s) => {
-        const linha = document.createElement("tr");
-        linha.innerHTML = `
-          <td>${s.diretor}</td>
-          <td>${s.grc}</td>
-          <td>${s.cd}</td>
+      lista.forEach(s => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${s.diretor || ""}</td>
+          <td>${s.grc || ""}</td>
+          <td>${s.cd || ""}</td>
           <td>
-            <button onclick="editarLinha('${s.cd}')">✏️</button>
-            <button class="excluir" onclick="excluirLinha('${s.cd}')">🗑️</button>
-          </td>`;
-        tabela.appendChild(linha);
+            <button class="editar" onclick="editar('${s.cd}')">Editar</button>
+            <button class="excluir" onclick="excluir('${s.cd}')">Excluir</button>
+          </td>
+        `;
+        tabela.appendChild(tr);
       });
       totalCDs.textContent = lista.length;
     }
 
     function preencherFiltros() {
-      const diretores = [...new Set(subordinacoes.map(s => s.diretor))].sort();
+      const dirs = [...new Set(subordinacoes.map(s => s.diretor))].sort();
       const grcs = [...new Set(subordinacoes.map(s => s.grc))].sort();
-      filtroDiretor.innerHTML = '<option value="">Todos os Diretores</option>' + diretores.map(d => `<option>${d}</option>`).join('');
+      filtroDiretor.innerHTML = '<option value="">Todos os Diretores</option>' + dirs.map(d => `<option>${d}</option>`).join('');
       filtroGrc.innerHTML = '<option value="">Todos os GRCs</option>' + grcs.map(g => `<option>${g}</option>`).join('');
     }
 
-    window.editarLinha = async (cd) => {
-      const registro = subordinacoes.find(s => s.cd === cd);
-      if (!registro) return showToast("Registro não encontrado.", "error");
+    window.editar = async (cd) => {
+      const reg = subordinacoes.find(s => s.cd === cd);
+      if (!reg) return toastMsg("Registro não encontrado", "#d62828");
 
-      const novoDir = prompt("Novo Diretor:", registro.diretor);
-      const novoGrc = prompt("Novo GRC:", registro.grc);
-      const novoCd = prompt("Novo CD:", registro.cd);
-      if (novoDir && novoGrc && novoCd) {
-        const atualizado = { ...registro, diretor: novoDir, grc: novoGrc, cd: novoCd };
-        await setDoc(doc(db, "subordinacoes", novoCd), atualizado);
-        showToast("✅ Registro atualizado!");
+      const novoDir = prompt("Novo Diretor:", reg.diretor);
+      const novoGrc = prompt("Novo GRC:", reg.grc);
+      if (novoDir && novoGrc) {
+        await setDoc(doc(db, "subordinacoes", cd), { diretor: novoDir, grc: novoGrc, cd });
+        toastMsg("Registro atualizado!");
         carregarSubordinacoes();
       }
     };
 
-    window.excluirLinha = async (cd) => {
-      if (!confirm(`Excluir o CD ${cd}?`)) return;
+    window.excluir = async (cd) => {
+      if (!confirm("Excluir este registro?")) return;
       await deleteDoc(doc(db, "subordinacoes", cd));
       subordinacoes = subordinacoes.filter(s => s.cd !== cd);
       atualizarTabela(subordinacoes);
-      showToast("🗑️ Registro excluído!");
+      toastMsg("Registro excluído!", "#e63946");
     };
 
     document.getElementById("btnApagar").addEventListener("click", async () => {
-      if (!confirm("⚠️ Deseja realmente apagar TODOS os registros?")) return;
-
-      try {
-        const promises = subordinacoes.filter(s => s.cd).map(s => deleteDoc(doc(db, "subordinacoes", s.cd)));
-        await Promise.all(promises);
-        subordinacoes = [];
-        atualizarTabela([]);
-        totalCDs.textContent = 0;
-        showToast("🧹 Todos os registros foram removidos!");
-      } catch (error) {
-        console.error(error);
-        showToast("❌ Erro ao apagar dados.", "error");
-      }
+      if (!confirm("Deseja realmente apagar TODOS os registros?")) return;
+      const promises = subordinacoes.map(s => deleteDoc(doc(db, "subordinacoes", s.cd)));
+      await Promise.all(promises);
+      subordinacoes = [];
+      atualizarTabela([]);
+      toastMsg("Todos os registros foram removidos!", "#e63946");
     });
 
     document.getElementById("btnImportar").addEventListener("click", () => {
       const file = document.getElementById("inputExcel").files[0];
-      if (!file) return showToast("Selecione um arquivo Excel antes de importar.", "error");
+      if (!file) return toastMsg("Selecione um arquivo Excel primeiro!", "#d62828");
 
       const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: "array" });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          const novosDados = XLSX.utils.sheet_to_json(sheet);
+      reader.onload = async e => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet);
 
-          for (const novo of novosDados) {
-            if (!novo.cd) continue;
-            await setDoc(doc(db, "subordinacoes", novo.cd), novo);
-          }
-
-          showToast("✅ Importação concluída!");
-          carregarSubordinacoes();
-        } catch (err) {
-          console.error(err);
-          showToast("❌ Erro ao importar Excel.", "error");
+        for (const r of rows) {
+          if (r.cd) await setDoc(doc(db, "subordinacoes", r.cd), r);
         }
+        toastMsg("Importação concluída!");
+        carregarSubordinacoes();
       };
       reader.readAsArrayBuffer(file);
     });
