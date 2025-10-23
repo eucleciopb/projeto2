@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Resumo de Solicitações de Mochilas</title>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
+    * {margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif;}
     body {
       background: #121212;
       color: #f5f5f5;
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
+      flex-direction: column;
+      align-items: center;
       min-height: 100vh;
       padding: 20px;
     }
@@ -22,17 +23,12 @@
       box-shadow: 0 0 15px rgba(0,0,0,0.4);
       padding: 30px;
       width: 100%;
-      max-width: 1200px;
+      max-width: 1300px;
     }
-    h1 {
-      text-align: center;
-      color: #fff;
-      margin-bottom: 25px;
-      font-size: 1.8rem;
-    }
+    h1 {text-align: center; color: #fff; margin-bottom: 25px; font-size: 1.8rem;}
     .cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 20px;
       margin-bottom: 30px;
     }
@@ -43,15 +39,8 @@
       text-align: center;
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
     }
-    .card h2 {
-      font-size: 2rem;
-      color: #00c4ff;
-    }
-    .card p {
-      font-size: 0.9rem;
-      color: #aaa;
-      margin-top: 5px;
-    }
+    .card h2 {font-size: 2rem; color: #00c4ff;}
+    .card p {font-size: 0.9rem; color: #aaa; margin-top: 5px;}
     .filtros {
       margin-bottom: 20px;
       display: flex;
@@ -72,126 +61,88 @@
       border-collapse: collapse;
       margin-top: 10px;
     }
-    th, td {
-      padding: 10px;
-      text-align: left;
-      border-bottom: 1px solid #333;
+    th, td {padding: 10px; text-align: left; border-bottom: 1px solid #333;}
+    th {background: #222; color: #00c4ff;}
+    tr:hover {background: #292929;}
+    .tabela-container {max-height: 400px; overflow-y: auto; margin-bottom: 30px;}
+    footer {text-align: center; margin-top: 20px; color: #888; font-size: 0.8rem;}
+    button {
+      background: #444; border: none; color: white; padding: 10px 20px;
+      border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s;
     }
-    th {
-      background: #222;
-      color: #00c4ff;
-    }
-    tr:hover {
-      background: #292929;
-    }
+    button:hover {background: #333;}
     .graficos {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
       margin-top: 40px;
     }
-    canvas {
-      background: #1b1b1b;
+    .grafico-container {
+      flex: 1 1 30%;
+      background: #222;
       border-radius: 12px;
       padding: 15px;
+      min-width: 300px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      transform: scale(0.9);
+      transition: 0.3s ease;
     }
-    footer {
-      text-align: center;
-      margin-top: 30px;
-      color: #888;
-      font-size: 0.8rem;
-    }
-    .back-btn {
-      margin-top: 20px;
-      background: #444;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .back-btn:hover {
-      background: #333;
-    }
-    @media (max-width: 900px) {
-      .graficos { grid-template-columns: 1fr; }
-    }
+    .grafico-container:hover {transform: scale(0.93);}
+    canvas {width: 100% !important; height: 250px !important;}
   </style>
 </head>
-
 <body>
   <div class="container">
     <h1>📊 Resumo de Solicitações de Mochilas</h1>
 
     <div class="cards">
-      <div class="card">
-        <h2 id="totalSolicitacoes">0</h2>
-        <p>Total de Solicitações</p>
-      </div>
-      <div class="card">
-        <h2 id="totalSolicitadas">0</h2>
-        <p>Mochilas Solicitadas</p>
-      </div>
-      <div class="card">
-        <h2 id="totalAprovadas">0</h2>
-        <p>Mochilas Aprovadas</p>
-      </div>
-      <div class="card">
-        <h2 id="saldoEstoque">0</h2>
-        <p>Saldo Atual em Estoque</p>
-      </div>
-      <div class="card">
-        <h2 id="diferencaEstoque">0</h2>
-        <p>Diferença (Estoque - Aprovadas)</p>
-      </div>
+      <div class="card"><h2 id="totalSolicitacoes">0</h2><p>Total de Solicitações</p></div>
+      <div class="card"><h2 id="totalSolicitadas">0</h2><p>Mochilas Solicitadas</p></div>
+      <div class="card"><h2 id="totalAprovadas">0</h2><p>Mochilas Aprovadas</p></div>
+      <div class="card"><h2 id="saldoAtual">0</h2><p>Saldo Atual em Estoque</p></div>
+      <div class="card"><h2 id="diferenca">0%</h2><p>Taxa de Aprovação</p></div>
     </div>
 
     <div class="filtros">
       <select id="filtroCargo">
         <option value="">Todos os Cargos</option>
-        <option value="AC">AC</option>
-        <option value="SV">SV</option>
-        <option value="GG">GG</option>
-        <option value="GV">GV</option>
-        <option value="ADM">ADM</option>
-        <option value="Financeiro">Financeiro</option>
+        <option value="AC">AC</option><option value="SV">SV</option>
+        <option value="GG">GG</option><option value="GV">GV</option>
+        <option value="ADM">ADM</option><option value="Financeiro">Financeiro</option>
       </select>
-      <input type="text" id="pesquisa" placeholder="🔍 Pesquisar por CD">
+      <input type="month" id="filtroMesAno">
+      <input type="text" id="pesquisa" placeholder="🔍 Pesquisar por CD ou Solicitante">
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>CD</th>
-          <th>Solicitante</th>
-          <th>Cargo</th>
-          <th>Data</th>
-          <th>Solicitadas</th>
-          <th>Aprovadas</th>
-        </tr>
-      </thead>
-      <tbody id="tabelaResumo"></tbody>
-    </table>
+    <div class="tabela-container">
+      <table>
+        <thead>
+          <tr>
+            <th>CD</th>
+            <th>Diretor</th>
+            <th>GRC</th>
+            <th>Solicitante</th>
+            <th>Cargo</th>
+            <th>Data</th>
+            <th>Solicitadas</th>
+            <th>Aprovadas</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaResumo"></tbody>
+      </table>
+    </div>
 
+    <h2 style="text-align:center;margin:20px 0;">📈 Gráficos de Acompanhamento</h2>
     <div class="graficos">
-      <div>
-        <h3 style="text-align:center; margin-bottom:10px;">📈 Mochilas Liberadas por Diretor (CD filtrado)</h3>
-        <canvas id="graficoDiretor"></canvas>
-      </div>
-      <div>
-        <h3 style="text-align:center; margin-bottom:10px;">📊 Mochilas Liberadas por GRC (CD filtrado)</h3>
-        <canvas id="graficoGrc"></canvas>
-      </div>
+      <div class="grafico-container"><canvas id="grafMes"></canvas></div>
+      <div class="grafico-container"><canvas id="grafDiretor"></canvas></div>
+      <div class="grafico-container"><canvas id="grafGrc"></canvas></div>
     </div>
 
-    <button class="back-btn" onclick="window.location.href='index.html'">⬅️ Voltar ao Menu</button>
-
+    <button onclick="window.location.href='index.html'">⬅️ Voltar ao Menu</button>
     <footer>© 2025 - Controle de Mochilas | Grupo Petrópolis</footer>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
@@ -214,113 +165,148 @@
     const totalSolicitacoes = document.getElementById('totalSolicitacoes');
     const totalSolicitadas = document.getElementById('totalSolicitadas');
     const totalAprovadas = document.getElementById('totalAprovadas');
-    const saldoEstoque = document.getElementById('saldoEstoque');
-    const diferencaEstoque = document.getElementById('diferencaEstoque');
+    const saldoAtual = document.getElementById('saldoAtual');
+    const diferenca = document.getElementById('diferenca');
     const filtroCargo = document.getElementById('filtroCargo');
+    const filtroMesAno = document.getElementById('filtroMesAno');
     const pesquisa = document.getElementById('pesquisa');
 
-    let dadosGerais = [];
-    let graficoDiretor, graficoGrc;
+    let dadosGerais = [], estoqueDados = [], subordinacoes = [];
+    let grafMes, grafDiretor, grafGrc;
 
     async function carregarResumo() {
       const solicitacoesSnap = await getDocs(collection(db, "solicitacoes"));
+      const estoqueSnap = await getDocs(collection(db, "estoque_mochilas"));
+      const subSnap = await getDocs(collection(db, "subordinacoes"));
+
       dadosGerais = solicitacoesSnap.docs.map(d => d.data());
-      atualizarResumo(dadosGerais);
+      estoqueDados = estoqueSnap.docs.map(d => d.data());
+      subordinacoes = subSnap.docs.map(d => d.data());
+
+      atualizarTudo();
+    }
+
+    function buscarSub(cd) {
+      const s = subordinacoes.find(x => x.cd?.trim().toLowerCase() === cd?.trim().toLowerCase());
+      return s ? { diretor: s.diretor || "-", grc: s.grc || "-" } : { diretor: "-", grc: "-" };
+    }
+
+    function filtrarDados() {
+      let filtrados = [...dadosGerais];
+      const cargo = filtroCargo.value;
+      const mesAno = filtroMesAno.value;
+      const termo = pesquisa.value.toLowerCase();
+
+      if (cargo) filtrados = filtrados.filter(d => d.cargo === cargo);
+      if (mesAno) filtrados = filtrados.filter(d => d.data?.startsWith(mesAno));
+      if (termo) filtrados = filtrados.filter(d =>
+        d.cd.toLowerCase().includes(termo) || d.nome.toLowerCase().includes(termo)
+      );
+      return filtrados;
+    }
+
+    function atualizarTudo() {
+      const filtrados = filtrarDados();
+      atualizarTabela(filtrados);
+      atualizarResumo(filtrados);
+      atualizarGraficos(filtrados);
+    }
+
+    function atualizarTabela(dados) {
+      tabela.innerHTML = "";
+      dados.forEach(d => {
+        const sub = buscarSub(d.cd);
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+          <td>${d.cd}</td><td>${sub.diretor}</td><td>${sub.grc}</td>
+          <td>${d.nome}</td><td>${d.cargo}</td>
+          <td>${d.data}</td><td>${d.qtdSolicitada}</td><td>${d.qtdAprovada}</td>
+        `;
+        tabela.appendChild(linha);
+      });
     }
 
     function atualizarResumo(dados) {
-      tabela.innerHTML = "";
       let totalSolic = dados.length;
       let totalQtdSolic = 0;
       let totalQtdAprov = 0;
-      let cdsSet = new Set();
 
       dados.forEach(d => {
         totalQtdSolic += d.qtdSolicitada || 0;
         totalQtdAprov += d.qtdAprovada || 0;
-        cdsSet.add(d.cd);
-        const linha = document.createElement('tr');
-        linha.innerHTML = `
-          <td>${d.cd}</td>
-          <td>${d.nome}</td>
-          <td>${d.cargo}</td>
-          <td>${d.data}</td>
-          <td>${d.qtdSolicitada}</td>
-          <td>${d.qtdAprovada}</td>
-        `;
-        tabela.appendChild(linha);
       });
+
+      let entradas = 0, saidas = 0;
+      estoqueDados.forEach(e => {
+        if (e.tipo === "Entrada") entradas += Number(e.quantidade);
+        else if (e.tipo === "Saída") saidas += Number(e.quantidade);
+      });
+      const saldo = entradas - saidas;
+      const taxa = totalQtdSolic > 0 ? ((totalQtdAprov / totalQtdSolic) * 100).toFixed(1) : 0;
 
       totalSolicitacoes.textContent = totalSolic;
       totalSolicitadas.textContent = totalQtdSolic;
       totalAprovadas.textContent = totalQtdAprov;
+      saldoAtual.textContent = saldo;
+      diferenca.textContent = `${taxa}%`;
     }
 
-    pesquisa.addEventListener('input', () => {
-      const termo = pesquisa.value.toLowerCase();
-      const filtrados = dadosGerais.filter(d => d.cd.toLowerCase().includes(termo));
-      atualizarResumo(filtrados);
-      gerarGraficosPorCd(filtrados);
-    });
+    function atualizarGraficos(dados) {
+      const porMes = {}, porDir = {}, porGrc = {};
 
-    function gerarGraficosPorCd(dadosFiltrados) {
-      if (graficoDiretor) graficoDiretor.destroy();
-      if (graficoGrc) graficoGrc.destroy();
-
-      // Agrupar apenas mochilas aprovadas (liberadas)
-      const porDiretor = {};
-      const porGrc = {};
-
-      dadosFiltrados.forEach(d => {
-        const diretor = d.diretor || "Não definido";
-        const grc = d.grc || "Não definido";
-        const aprovadas = d.qtdAprovada || 0;
-
-        if (!porDiretor[diretor]) porDiretor[diretor] = 0;
-        if (!porGrc[grc]) porGrc[grc] = 0;
-
-        porDiretor[diretor] += aprovadas;
-        porGrc[grc] += aprovadas;
+      dados.forEach(d => {
+        const sub = buscarSub(d.cd);
+        const mes = d.data?.slice(0, 7) || "N/A";
+        porMes[mes] = (porMes[mes] || 0) + (d.qtdAprovada || 0);
+        porDir[sub.diretor] = (porDir[sub.diretor] || 0) + (d.qtdAprovada || 0);
+        porGrc[sub.grc] = (porGrc[sub.grc] || 0) + (d.qtdAprovada || 0);
       });
 
-      graficoDiretor = new Chart(document.getElementById("graficoDiretor"), {
+      const cfg = (labels, data, titulo) => ({
         type: "bar",
         data: {
-          labels: Object.keys(porDiretor),
-          datasets: [
-            {
-              label: "Mochilas Liberadas",
-              data: Object.values(porDiretor),
-              backgroundColor: "#00c46a",
-            }
-          ]
+          labels, datasets: [{
+            label: titulo,
+            data,
+            backgroundColor: "#00b4d8"
+          }]
         },
         options: {
           responsive: true,
-          plugins: { legend: { labels: { color: "#fff" } } },
-          scales: { x: { ticks: { color: "#ccc" } }, y: { ticks: { color: "#ccc" } } }
-        }
+          plugins: {
+            legend: { display: true, labels: { color: "#fff" }},
+            datalabels: {
+              color: "#fff",
+              anchor: "end",
+              align: "top",
+              formatter: v => v
+            },
+            title: { display: true, text: titulo, color: "#fff", font: { size: 14 }}
+          },
+          scales: {
+            x: { ticks: { color: "#fff", font: { size: 10 } } },
+            y: { ticks: { color: "#fff", font: { size: 10 } }, grid: { color: "#333" } }
+          }
+        },
+        plugins: [ChartDataLabels]
       });
 
-      graficoGrc = new Chart(document.getElementById("graficoGrc"), {
-        type: "bar",
-        data: {
-          labels: Object.keys(porGrc),
-          datasets: [
-            {
-              label: "Mochilas Liberadas",
-              data: Object.values(porGrc),
-              backgroundColor: "#00b4d8",
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { labels: { color: "#fff" } } },
-          scales: { x: { ticks: { color: "#ccc" } }, y: { ticks: { color: "#ccc" } } }
-        }
-      });
+      const ctxMes = document.getElementById("grafMes").getContext("2d");
+      const ctxDir = document.getElementById("grafDiretor").getContext("2d");
+      const ctxGrc = document.getElementById("grafGrc").getContext("2d");
+
+      if (grafMes) grafMes.destroy();
+      if (grafDiretor) grafDiretor.destroy();
+      if (grafGrc) grafGrc.destroy();
+
+      grafMes = new Chart(ctxMes, cfg(Object.keys(porMes), Object.values(porMes), "Mochilas Aprovadas por Mês/Ano"));
+      grafDiretor = new Chart(ctxDir, cfg(Object.keys(porDir), Object.values(porDir), "Mochilas Aprovadas por Diretor"));
+      grafGrc = new Chart(ctxGrc, cfg(Object.keys(porGrc), Object.values(porGrc), "Mochilas Aprovadas por GRC"));
     }
+
+    filtroCargo.addEventListener("change", atualizarTudo);
+    filtroMesAno.addEventListener("change", atualizarTudo);
+    pesquisa.addEventListener("input", atualizarTudo);
 
     carregarResumo();
   </script>

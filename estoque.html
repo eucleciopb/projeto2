@@ -6,156 +6,105 @@
   <title>Controle de Estoque de Mochilas</title>
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Poppins", sans-serif;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
     body {
-      background: #121212;
-      color: #fff;
+      background: #0d0d0d;
+      color: #f5f5f5;
       display: flex;
       justify-content: center;
       align-items: flex-start;
       min-height: 100vh;
-      padding: 30px;
+      padding: 40px 20px;
     }
-
     .container {
       background: #1e1e1e;
       border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 15px rgba(0,0,0,0.4);
       padding: 30px;
       width: 100%;
-      max-width: 1100px;
-      animation: fadeIn 0.6s ease;
+      max-width: 950px;
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
     h1 {
       text-align: center;
       color: #00c4ff;
-      margin-bottom: 20px;
-    }
-
-    .dashboard {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
       margin-bottom: 30px;
     }
-
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
     .card {
-      background: #2a2a2a;
+      background: #2b2b2b;
       padding: 20px;
-      border-radius: 12px;
+      border-radius: 10px;
       text-align: center;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-      transition: 0.3s;
     }
-
-    .card.danger {
-      background: #5a1e1e;
-      border: 1px solid #ff4d4d;
-    }
-
     .card h2 {
       color: #00c4ff;
       font-size: 1.8rem;
     }
-
     .card p {
+      color: #aaa;
+      margin-top: 6px;
       font-size: 0.9rem;
-      color: #bbb;
-      margin-top: 5px;
     }
-
-    button {
-      background: #00c4ff;
+    hr {
       border: none;
-      border-radius: 10px;
-      padding: 12px 20px;
-      color: white;
+      height: 1px;
+      background: #333;
+      margin: 25px 0;
+    }
+    .card.alert {
+      background: #5c0000;
+      color: #fff;
+    }
+    .acoes {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    button {
+      background: #00b4d8;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      color: #fff;
       font-weight: 600;
       cursor: pointer;
       transition: 0.3s;
-      margin-bottom: 15px;
     }
-
-    button:hover {
-      background: #009ecb;
-    }
-
-    .form-mov {
-      display: none;
-      background: #2a2a2a;
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-
-    .form-mov.active {
-      display: block;
-    }
-
-    .form-mov label {
-      display: block;
-      margin-top: 10px;
-      margin-bottom: 5px;
-      font-weight: 600;
-    }
-
-    .form-mov input, .form-mov select, .form-mov textarea {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #1e1e1e;
-      color: #fff;
-      margin-bottom: 10px;
-    }
-
-    .form-mov button {
-      width: 100%;
-      margin-top: 10px;
-    }
-
+    button:hover { background: #009ec0; }
     table {
       width: 100%;
       border-collapse: collapse;
+      margin-top: 15px;
     }
-
     th, td {
       padding: 10px;
-      border-bottom: 1px solid #333;
       text-align: left;
+      border-bottom: 1px solid #333;
     }
-
-    th {
-      background: #222;
-      color: #00c4ff;
+    th { background: #222; color: #00c4ff; }
+    tr:hover { background: #292929; }
+    td.acao-btn {
+      display: flex;
+      gap: 10px;
     }
-
-    tr:hover {
-      background: #2a2a2a;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 20px;
-      color: #888;
-      font-size: 0.8rem;
-    }
-
+    .editar { background: #00c46a; }
+    .editar:hover { background: #009f55; }
+    .excluir { background: #dc3545; }
+    .excluir:hover { background: #b02a37; }
     .back-btn {
       background: #444;
-      margin-top: 15px;
+      margin-top: 20px;
+    }
+    footer {
+      text-align: center;
+      margin-top: 25px;
+      color: #888;
+      font-size: 0.8rem;
     }
   </style>
 </head>
@@ -163,49 +112,39 @@
   <div class="container">
     <h1>📦 Controle de Estoque de Mochilas</h1>
 
-    <div id="dashboard" class="dashboard">
+    <div class="cards">
       <div class="card">
-        <h2 id="totalEstoque">0</h2>
-        <p>Total de Mochilas em Estoque</p>
+        <h2 id="totalEntradas">0</h2>
+        <p>Entrada de Mochilas no Estoque</p>
       </div>
       <div class="card">
         <h2 id="totalAprovadas">0</h2>
         <p>Total de Mochilas Aprovadas</p>
       </div>
       <div class="card">
+        <h2 id="saldoMochilas">0</h2>
+        <p>Saldo de Mochilas</p>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="cards">
+      <div class="card">
         <h2>600</h2>
         <p>Estoque Mínimo</p>
       </div>
-      <div class="card" id="cardDiferenca">
-        <h2 id="diferenca">0</h2>
-        <p>Diferença</p>
+      <div class="card alert">
+        <h2 id="diferencaEstoque">0</h2>
+        <p>Diferença para o Mínimo</p>
       </div>
     </div>
 
-    <button id="abrirForm">➕ Incluir Movimentação</button>
-
-    <div class="form-mov" id="formMov">
-      <h3>Registrar Movimentação</h3>
-      <label for="dataMov">Data</label>
-      <input type="date" id="dataMov" required>
-
-      <label for="tipoMov">Tipo</label>
-      <select id="tipoMov" required>
-        <option value="">Selecione...</option>
-        <option value="Entrada">Entrada</option>
-        <option value="Saída">Saída</option>
-      </select>
-
-      <label for="quantidadeMov">Total de Mochilas</label>
-      <input type="number" id="quantidadeMov" min="1" required>
-
-      <label for="descricaoMov">Descrição</label>
-      <textarea id="descricaoMov" rows="2" placeholder="Ex: Recebimento de mochilas novas"></textarea>
-
-      <button id="salvarMov">💾 Salvar Movimentação</button>
+    <div class="acoes">
+      <button id="novaMov">➕ Incluir Movimentação</button>
     </div>
 
-    <h3 style="margin-top:20px;">📋 Histórico de Movimentações</h3>
+    <h3 style="margin-top:25px;">📋 Histórico de Movimentações</h3>
     <table>
       <thead>
         <tr>
@@ -213,21 +152,21 @@
           <th>Tipo</th>
           <th>Quantidade</th>
           <th>Descrição</th>
+          <th>Ações</th>
         </tr>
       </thead>
-      <tbody id="tabelaMov"></tbody>
+      <tbody id="tabelaEstoque"></tbody>
     </table>
 
     <button class="back-btn" onclick="window.location.href='index.html'">⬅️ Voltar ao Menu</button>
-
     <footer>© 2025 - Controle de Mochilas | Grupo Petrópolis</footer>
   </div>
 
-  <!-- 🔥 Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } 
-      from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+    import {
+      getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBcXTj40CI4fEJOGp2T_ghh3Wwpki4OnW0",
@@ -241,77 +180,84 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const totalEstoque = document.getElementById("totalEstoque");
+    const tabela = document.getElementById("tabelaEstoque");
+    const totalEntradas = document.getElementById("totalEntradas");
     const totalAprovadas = document.getElementById("totalAprovadas");
-    const diferenca = document.getElementById("diferenca");
-    const cardDiferenca = document.getElementById("cardDiferenca");
-    const tabelaMov = document.getElementById("tabelaMov");
-    const abrirForm = document.getElementById("abrirForm");
-    const formMov = document.getElementById("formMov");
-    const salvarMov = document.getElementById("salvarMov");
+    const saldoMochilas = document.getElementById("saldoMochilas");
+    const diferencaEstoque = document.getElementById("diferencaEstoque");
+    const novaMovBtn = document.getElementById("novaMov");
 
-    abrirForm.addEventListener("click", () => {
-      formMov.classList.toggle("active");
-    });
+    async function carregarDados() {
+      const movSnap = await getDocs(collection(db, "estoque_mochilas"));
+      const solSnap = await getDocs(collection(db, "solicitacoes"));
 
-    async function carregarPainel() {
-      const movs = await getDocs(collection(db, "estoque_mochilas"));
-      const solicitacoes = await getDocs(collection(db, "solicitacoes"));
+      const movs = movSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const solicitacoes = solSnap.docs.map(d => d.data());
 
-      let entradas = 0, saidas = 0;
-      movs.forEach(m => {
-        const d = m.data();
-        if (d.tipo === "Entrada") entradas += d.quantidade;
-        if (d.tipo === "Saída") saidas += d.quantidade;
-      });
+      let entradas = 0;
+      movs.forEach(m => { if (m.tipo === "Entrada") entradas += Number(m.quantidade); });
 
       let aprovadas = 0;
-      solicitacoes.forEach(s => {
-        const d = s.data();
-        aprovadas += d.qtdAprovada || 0;
-      });
+      solicitacoes.forEach(s => aprovadas += Number(s.qtdAprovada || 0));
 
-      const total = entradas - saidas;
-      const dif = total - 600;
+      const saldo = entradas - aprovadas;
+      const diferenca = saldo - 600;
 
-      totalEstoque.textContent = total;
+      totalEntradas.textContent = entradas;
       totalAprovadas.textContent = aprovadas;
-      diferenca.textContent = dif >= 0 ? `+${dif}` : `${dif}`;
-      cardDiferenca.classList.toggle("danger", total < 600);
+      saldoMochilas.textContent = saldo;
+      diferencaEstoque.textContent = diferenca;
 
-      tabelaMov.innerHTML = "";
+      tabela.innerHTML = "";
+      movs.sort((a, b) => new Date(b.data) - new Date(a.data));
       movs.forEach(m => {
-        const d = m.data();
-        const linha = document.createElement("tr");
-        linha.innerHTML = `
-          <td>${new Date(d.data).toLocaleDateString()}</td>
-          <td>${d.tipo}</td>
-          <td>${d.quantidade}</td>
-          <td>${d.descricao || "-"}</td>
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${m.data}</td>
+          <td>${m.tipo}</td>
+          <td>${m.quantidade}</td>
+          <td>${m.descricao || ""}</td>
+          <td class="acao-btn">
+            <button class="editar">✏️</button>
+            <button class="excluir">🗑️</button>
+          </td>
         `;
-        tabelaMov.appendChild(linha);
+        tr.querySelector(".excluir").addEventListener("click", async () => {
+          if (confirm("Excluir esta movimentação?")) {
+            await deleteDoc(doc(db, "estoque_mochilas", m.id));
+            carregarDados();
+          }
+        });
+        tr.querySelector(".editar").addEventListener("click", async () => {
+          const novaQtd = prompt("Nova quantidade:", m.quantidade);
+          const novaDesc = prompt("Nova descrição:", m.descricao || "");
+          if (novaQtd) {
+            await updateDoc(doc(db, "estoque_mochilas", m.id), {
+              quantidade: Number(novaQtd),
+              descricao: novaDesc
+            });
+            carregarDados();
+          }
+        });
+        tabela.appendChild(tr);
       });
     }
 
-    salvarMov.addEventListener("click", async () => {
-      const data = document.getElementById("dataMov").value;
-      const tipo = document.getElementById("tipoMov").value;
-      const quantidade = parseInt(document.getElementById("quantidadeMov").value);
-      const descricao = document.getElementById("descricaoMov").value.trim();
+    novaMovBtn.addEventListener("click", async () => {
+      const tipo = prompt("Tipo (Entrada/Saída):");
+      const quantidade = Number(prompt("Quantidade:"));
+      const descricao = prompt("Descrição:");
 
-      if (!data || !tipo || !quantidade || quantidade <= 0) {
-        alert("Preencha todos os campos corretamente!");
-        return;
-      }
+      if (!tipo || !quantidade) return alert("Preencha todos os campos!");
 
-      await addDoc(collection(db, "estoque_mochilas"), { data, tipo, quantidade, descricao });
-      alert("Movimentação registrada com sucesso!");
-      formMov.reset();
-      formMov.classList.remove("active");
-      carregarPainel();
+      const dataAtual = new Date().toLocaleDateString("pt-BR");
+      await addDoc(collection(db, "estoque_mochilas"), {
+        data: dataAtual, tipo, quantidade, descricao
+      });
+      carregarDados();
     });
 
-    carregarPainel();
+    carregarDados();
   </script>
 </body>
 </html>

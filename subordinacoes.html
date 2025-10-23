@@ -1,172 +1,127 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Subordinações - Controle de Mochilas</title>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subordinações - Diretor / GRC / CD</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif; }
-
+    * {margin: 0; padding: 0; box-sizing: border-box; font-family: "Poppins", sans-serif;}
     body {
       background: #121212;
-      color: #eee;
+      color: #f5f5f5;
       display: flex;
       justify-content: center;
       align-items: flex-start;
       min-height: 100vh;
       padding: 30px;
     }
-
     .container {
       background: #1e1e1e;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
       padding: 30px;
+      border-radius: 16px;
       width: 100%;
       max-width: 1100px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.4);
     }
-
-    h1 {
-      text-align: center;
-      color: #00c4ff;
-      margin-bottom: 25px;
-    }
-
-    .importar {
-      display: flex;
+    h1 {text-align: center; color: #4cc9f0; margin-bottom: 10px;}
+    .topo {
+      display: flex; flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 15px;
+      margin-bottom: 15px;
     }
-
-    input[type="file"] {
-      background: #2a2a2a;
-      color: #fff;
-      border: none;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-
     button {
-      background: #00c4ff;
-      border: none;
-      border-radius: 10px;
-      padding: 12px 20px;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.3s;
+      padding: 10px 20px;
+      border: none; border-radius: 8px;
+      cursor: pointer; font-weight: 600;
+      color: #fff; transition: 0.3s;
     }
-
-    button:hover { background: #009ecb; }
-    .btn-salvar { background: #00c46a; }
-    .btn-salvar:hover { background: #009f55; }
-    .btn-apagar { background: #dc3545; }
-    .btn-apagar:hover { background: #b02a37; }
-
-    .tabela-container {
-      max-height: 600px; /* cerca de 200 linhas */
-      overflow-y: auto;
-      border: 1px solid #333;
-      border-radius: 8px;
+    .importar {background: #0077b6;}
+    .apagar {background: #ef233c;}
+    .voltar {background: #444; margin-top: 15px;}
+    button:hover {opacity: 0.9;}
+    table {width: 100%; border-collapse: collapse; margin-top: 10px;}
+    th, td {padding: 10px; text-align: left; border-bottom: 1px solid #333;}
+    th {background: #222; color: #00c4ff;}
+    tr:hover {background: #292929;}
+    td button {
+      background: #00b4d8; border: none;
+      padding: 6px 12px; border-radius: 6px;
+      font-size: 0.8rem; color: #fff;
+      margin-right: 6px;
     }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    td button.excluir {background: #ef476f;}
+    .tabela-container {max-height: 500px; overflow-y: auto; margin-bottom: 20px;}
+    .filtros {
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+      margin-bottom: 10px;
     }
-
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid #333;
-      text-align: left;
+    select, input[type=text] {
+      background: #2a2a2a; color: #fff; border: none;
+      padding: 8px 12px; border-radius: 8px;
     }
-
-    th {
-      background: #222;
-      color: #00c4ff;
-      position: sticky;
-      top: 0;
-      cursor: pointer;
+    .cards {
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; margin-bottom: 20px;
     }
-
-    tr:hover { background: #2a2a2a; }
-    td[contenteditable="true"] { background: #242424; border-radius: 4px; }
-
-    .acoes {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
+    .card {
+      flex: 1; min-width: 250px; background: #2a2a2a;
+      border-radius: 12px; text-align: center;
+      padding: 15px; box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
-
-    .btn-voltar {
-      background: #444;
-      margin-top: 20px;
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 20px;
-      color: #888;
-      font-size: 0.8rem;
-    }
-
-    th.sorted-asc::after {
-      content: " ▲";
-      color: #00c4ff;
-    }
-    th.sorted-desc::after {
-      content: " ▼";
-      color: #00c4ff;
-    }
+    .card h2 {color: #00c4ff; font-size: 2rem;}
+    .card p {color: #aaa; font-size: 0.9rem;}
+    footer {text-align: center; margin-top: 10px; color: #777; font-size: 0.8rem;}
   </style>
 </head>
 <body>
-
   <div class="container">
     <h1>📋 Subordinações - Diretor / GRC / CD</h1>
 
-    <div class="importar">
-      <input type="file" id="inputExcel" accept=".xlsx" />
-      <div class="acoes">
-        <button id="importarBtn">📥 Importar Excel</button>
-        <button id="salvarBtn" class="btn-salvar">💾 Salvar Alterações</button>
-        <button id="apagarBtn" class="btn-apagar">🗑️ Apagar Todos</button>
+    <div class="cards">
+      <div class="card">
+        <h2 id="totalCDs">0</h2>
+        <p>Total de CDs Cadastrados</p>
       </div>
     </div>
 
+    <div class="topo">
+      <input type="file" id="inputExcel" accept=".xlsx, .xls">
+      <div>
+        <button class="importar" id="btnImportar">📥 Importar Excel (Salvar Automático)</button>
+        <button class="apagar" id="btnApagar">🗑️ Apagar Todos</button>
+      </div>
+    </div>
+
+    <div class="filtros">
+      <select id="filtroDiretor"><option value="">Todos os Diretores</option></select>
+      <select id="filtroGrc"><option value="">Todos os GRCs</option></select>
+      <input type="text" id="pesquisa" placeholder="🔍 Pesquisar CD...">
+    </div>
+
     <div class="tabela-container">
-      <table id="tabelaSub">
+      <table>
         <thead>
           <tr>
-            <th data-col="diretor">Diretor</th>
-            <th data-col="grc">GRC</th>
-            <th data-col="cd">CD</th>
+            <th>Diretor</th>
+            <th>GRC</th>
+            <th>CD</th>
+            <th>Ações</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="tabelaSub"></tbody>
       </table>
     </div>
 
-    <button class="btn-voltar" onclick="window.location.href='index.html'">⬅️ Voltar ao Menu</button>
+    <button class="voltar" onclick="window.location.href='index.html'">⬅️ Voltar ao Menu</button>
     <footer>© 2025 - Grupo Petrópolis | Sistema de Controle de Mochilas</footer>
   </div>
 
-  <!-- Biblioteca XLSX -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
-    import { 
-      getFirestore, collection, getDocs, addDoc, deleteDoc, doc 
-    } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, setDoc, deleteDoc, doc } 
+      from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBcXTj40CI4fEJOGp2T_ghh3Wwpki4OnW0",
@@ -180,105 +135,119 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const tabelaBody = document.querySelector("#tabelaSub tbody");
-    const importarBtn = document.getElementById("importarBtn");
-    const salvarBtn = document.getElementById("salvarBtn");
-    const apagarBtn = document.getElementById("apagarBtn");
-    const inputExcel = document.getElementById("inputExcel");
+    const tabela = document.getElementById("tabelaSub");
+    const totalCDs = document.getElementById("totalCDs");
+    const filtroDiretor = document.getElementById("filtroDiretor");
+    const filtroGrc = document.getElementById("filtroGrc");
+    const pesquisa = document.getElementById("pesquisa");
 
-    let dadosTabela = [];
-    let ordem = { coluna: null, asc: true };
+    let subordinacoes = [];
 
-    // 🟦 Carregar subordinações
     async function carregarSubordinacoes() {
-      tabelaBody.innerHTML = "";
-      const snapshot = await getDocs(collection(db, "subordinacoes"));
-      dadosTabela = snapshot.docs.map(doc => doc.data());
-      preencherTabela(dadosTabela);
+      const snap = await getDocs(collection(db, "subordinacoes"));
+      subordinacoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      atualizarTabela(subordinacoes);
+      preencherFiltros();
     }
 
-    function preencherTabela(dados) {
-      tabelaBody.innerHTML = "";
-      dados.forEach(d => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td contenteditable="true">${d.diretor}</td>
-          <td contenteditable="true">${d.grc}</td>
-          <td contenteditable="true">${d.cd}</td>
-        `;
-        tabelaBody.appendChild(tr);
+    function preencherFiltros() {
+      const diretores = [...new Set(subordinacoes.map(s => s.diretor))].sort();
+      const grcs = [...new Set(subordinacoes.map(s => s.grc))].sort();
+      filtroDiretor.innerHTML = '<option value="">Todos os Diretores</option>' + diretores.map(d => `<option>${d}</option>`).join('');
+      filtroGrc.innerHTML = '<option value="">Todos os GRCs</option>' + grcs.map(g => `<option>${g}</option>`).join('');
+    }
+
+    function atualizarTabela(lista) {
+      tabela.innerHTML = "";
+      lista.forEach((s, i) => {
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+          <td>${s.diretor}</td>
+          <td>${s.grc}</td>
+          <td>${s.cd}</td>
+          <td>
+            <button onclick="editarLinha(${i})">✏️</button>
+            <button class="excluir" onclick="excluirLinha(${i})">🗑️</button>
+          </td>`;
+        tabela.appendChild(linha);
       });
+      totalCDs.textContent = lista.length;
     }
 
-    // 🟨 Importar Excel
-    importarBtn.addEventListener("click", () => {
-      const arquivo = inputExcel.files[0];
-      if (!arquivo) return alert("Selecione um arquivo Excel primeiro!");
-      const leitor = new FileReader();
-      leitor.onload = (e) => {
+    window.editarLinha = (i) => {
+      const novoDir = prompt("Novo Diretor:", subordinacoes[i].diretor);
+      const novoGrc = prompt("Novo GRC:", subordinacoes[i].grc);
+      const novoCd = prompt("Novo CD:", subordinacoes[i].cd);
+      if (novoDir && novoGrc && novoCd) {
+        subordinacoes[i] = { ...subordinacoes[i], diretor: novoDir, grc: novoGrc, cd: novoCd };
+        setDoc(doc(db, "subordinacoes", novoCd), subordinacoes[i]);
+        atualizarTabela(subordinacoes);
+      }
+    };
+
+    window.excluirLinha = async (i) => {
+      if (confirm(`Excluir ${subordinacoes[i].cd}?`)) {
+        await deleteDoc(doc(db, "subordinacoes", subordinacoes[i].cd));
+        subordinacoes.splice(i, 1);
+        atualizarTabela(subordinacoes);
+      }
+    };
+
+    document.getElementById("btnImportar").addEventListener("click", async () => {
+      const file = document.getElementById("inputExcel").files[0];
+      if (!file) return alert("Selecione um arquivo Excel.");
+      const reader = new FileReader();
+      reader.onload = async (e) => {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: "array" });
-        const planilha = workbook.Sheets[workbook.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(planilha, { header: 1 });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const novosDados = XLSX.utils.sheet_to_json(sheet);
 
-        dadosTabela = [];
-        json.slice(1).forEach(linha => {
-          if (linha.length >= 3) {
-            const [diretor, grc, cd] = linha;
-            dadosTabela.push({ diretor, grc, cd });
+        // Evita duplicação: se já existe CD, atualiza; se não, adiciona
+        const cdsExistentes = subordinacoes.map(s => s.cd.trim().toLowerCase());
+        novosDados.forEach(novo => {
+          const cdLower = novo.cd.trim().toLowerCase();
+          const existenteIndex = cdsExistentes.indexOf(cdLower);
+          if (existenteIndex >= 0) {
+            subordinacoes[existenteIndex] = { ...subordinacoes[existenteIndex], ...novo };
+          } else {
+            subordinacoes.push(novo);
           }
         });
-        preencherTabela(dadosTabela);
-        alert("✅ Dados importados! Clique em 'Salvar Alterações' para gravar.");
+
+        // Salva automaticamente no Firestore
+        for (const s of subordinacoes) {
+          await setDoc(doc(db, "subordinacoes", s.cd), s);
+        }
+
+        alert("Importação concluída e dados salvos com sucesso!");
+        atualizarTabela(subordinacoes);
+        preencherFiltros();
       };
-      leitor.readAsArrayBuffer(arquivo);
+      reader.readAsArrayBuffer(file);
     });
 
-    // 💾 Salvar
-    salvarBtn.addEventListener("click", async () => {
-      const linhas = document.querySelectorAll("#tabelaSub tbody tr");
-      const snapshot = await getDocs(collection(db, "subordinacoes"));
-      for (const docItem of snapshot.docs) await deleteDoc(doc(db, "subordinacoes", docItem.id));
-
-      for (const tr of linhas) {
-        const tds = tr.querySelectorAll("td");
-        const diretor = tds[0].textContent.trim();
-        const grc = tds[1].textContent.trim();
-        const cd = tds[2].textContent.trim();
-        if (diretor && grc && cd) await addDoc(collection(db, "subordinacoes"), { diretor, grc, cd });
+    document.getElementById("btnApagar").addEventListener("click", async () => {
+      if (!confirm("Deseja realmente apagar todos os registros?")) return;
+      for (const s of subordinacoes) {
+        await deleteDoc(doc(db, "subordinacoes", s.cd));
       }
-
-      alert("✅ Subordinações salvas com sucesso!");
-      carregarSubordinacoes();
+      subordinacoes = [];
+      atualizarTabela(subordinacoes);
     });
 
-    // 🗑️ Apagar todos
-    apagarBtn.addEventListener("click", async () => {
-      if (!confirm("⚠️ Deseja realmente apagar TODOS os registros?")) return;
-      const snapshot = await getDocs(collection(db, "subordinacoes"));
-      for (const docItem of snapshot.docs) await deleteDoc(doc(db, "subordinacoes", docItem.id));
-      tabelaBody.innerHTML = "";
-      alert("🗑️ Todos os registros foram apagados!");
-    });
-
-    // 🔽 Ordenar por coluna
-    document.querySelectorAll("th").forEach(th => {
-      th.addEventListener("click", () => {
-        const coluna = th.dataset.col;
-        if (ordem.coluna === coluna) ordem.asc = !ordem.asc;
-        else { ordem.coluna = coluna; ordem.asc = true; }
-
-        document.querySelectorAll("th").forEach(h => h.classList.remove("sorted-asc", "sorted-desc"));
-        th.classList.add(ordem.asc ? "sorted-asc" : "sorted-desc");
-
-        const sorted = [...dadosTabela].sort((a, b) => {
-          const valA = a[coluna].toLowerCase();
-          const valB = b[coluna].toLowerCase();
-          return ordem.asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        });
-        preencherTabela(sorted);
+    function filtrar() {
+      let lista = subordinacoes.filter(s => {
+        return (!filtroDiretor.value || s.diretor === filtroDiretor.value) &&
+               (!filtroGrc.value || s.grc === filtroGrc.value) &&
+               (!pesquisa.value || s.cd.toLowerCase().includes(pesquisa.value.toLowerCase()));
       });
-    });
+      atualizarTabela(lista);
+    }
+
+    filtroDiretor.addEventListener("change", filtrar);
+    filtroGrc.addEventListener("change", filtrar);
+    pesquisa.addEventListener("input", filtrar);
 
     carregarSubordinacoes();
   </script>
