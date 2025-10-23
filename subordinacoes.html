@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -146,6 +145,7 @@
 
     let subordinacoes = [];
 
+    // 🔄 Carrega registros do Firestore
     async function carregarSubordinacoes() {
       const snap = await getDocs(collection(db, "subordinacoes"));
       subordinacoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -153,13 +153,7 @@
       preencherFiltros();
     }
 
-    function preencherFiltros() {
-      const diretores = [...new Set(subordinacoes.map(s => s.diretor))].sort();
-      const grcs = [...new Set(subordinacoes.map(s => s.grc))].sort();
-      filtroDiretor.innerHTML = '<option value="">Todos os Diretores</option>' + diretores.map(d => `<option>${d}</option>`).join('');
-      filtroGrc.innerHTML = '<option value="">Todos os GRCs</option>' + grcs.map(g => `<option>${g}</option>`).join('');
-    }
-
+    // 🧩 Atualiza tabela
     function atualizarTabela(lista) {
       tabela.innerHTML = "";
       lista.forEach((s, i) => {
@@ -169,85 +163,96 @@
           <td>${s.grc}</td>
           <td>${s.cd}</td>
           <td>
-            <button onclick="editarLinha(${i})">✏️</button>
-            <button class="excluir" onclick="excluirLinha(${i})">🗑️</button>
+            <button onclick="editarLinha('${s.cd}')">✏️</button>
+            <button class="excluir" onclick="excluirLinha('${s.cd}')">🗑️</button>
           </td>`;
         tabela.appendChild(linha);
       });
       totalCDs.textContent = lista.length;
     }
 
-    window.editarLinha = (i) => {
-      const novoDir = prompt("Novo Diretor:", subordinacoes[i].diretor);
-      const novoGrc = prompt("Novo GRC:", subordinacoes[i].grc);
-      const novoCd = prompt("Novo CD:", subordinacoes[i].cd);
+    // 🧠 Preenche filtros
+    function preencherFiltros() {
+      const diretores = [...new Set(subordinacoes.map(s => s.diretor))].sort();
+      const grcs = [...new Set(subordinacoes.map(s => s.grc))].sort();
+      filtroDiretor.innerHTML = '<option value="">Todos os Diretores</option>' + diretores.map(d => `<option>${d}</option>`).join('');
+      filtroGrc.innerHTML = '<option value="">Todos os GRCs</option>' + grcs.map(g => `<option>${g}</option>`).join('');
+    }
+
+    // ✏️ Editar registro
+    window.editarLinha = async (cd) => {
+      const registro = subordinacoes.find(s => s.cd === cd);
+      if (!registro) return alert("Registro não encontrado.");
+
+      const novoDir = prompt("Novo Diretor:", registro.diretor);
+      const novoGrc = prompt("Novo GRC:", registro.grc);
+      const novoCd = prompt("Novo CD:", registro.cd);
       if (novoDir && novoGrc && novoCd) {
-        subordinacoes[i] = { ...subordinacoes[i], diretor: novoDir, grc: novoGrc, cd: novoCd };
-        setDoc(doc(db, "subordinacoes", novoCd), subordinacoes[i]);
-        atualizarTabela(subordinacoes);
+        const atualizado = { ...registro, diretor: novoDir, grc: novoGrc, cd: novoCd };
+        await setDoc(doc(db, "subordinacoes", novoCd), atualizado);
+        alert("✅ Registro atualizado!");
+        carregarSubordinacoes();
       }
     };
 
-    window.excluirLinha = async (i) => {
-      if (confirm(`Excluir ${subordinacoes[i].cd}?`)) {
-        await deleteDoc(doc(db, "subordinacoes", subordinacoes[i].cd));
-        subordinacoes.splice(i, 1);
-        atualizarTabela(subordinacoes);
-      }
+    // 🗑️ Excluir linha individual
+    window.excluirLinha = async (cd) => {
+      if (!confirm(`Excluir o CD ${cd}?`)) return;
+      await deleteDoc(doc(db, "subordinacoes", cd));
+      subordinacoes = subordinacoes.filter(s => s.cd !== cd);
+      atualizarTabela(subordinacoes);
+      alert("🗑️ Registro removido!");
     };
 
-    // ✅ Importar e salvar automaticamente
+    // 🧹 Apagar todos
+    document.getElementById("btnApagar").addEventListener("click", async () => {
+      if (!confirm("⚠️ Deseja realmente apagar TODOS os registros?")) return;
+      for (const s of subordinacoes) {
+        if (s.cd) await deleteDoc(doc(db, "subordinacoes", s.cd));
+      }
+      subordinacoes = [];
+      atualizarTabela([]);
+      alert("🧹 Todos os registros foram excluídos!");
+    });
+
+    // 📥 Importar Excel e salvar automaticamente
     document.getElementById("btnImportar").addEventListener("click", () => {
       const file = document.getElementById("inputExcel").files[0];
       if (!file) return alert("Selecione um arquivo Excel antes de importar.");
 
       const reader = new FileReader();
-
-      reader.onload = async function(e) {
+      reader.onload = async (e) => {
         try {
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: "array" });
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
           const novosDados = XLSX.utils.sheet_to_json(sheet);
 
-          const cdsExistentes = subordinacoes.map(s => s.cd.trim().toLowerCase());
-          novosDados.forEach(novo => {
-            if (!novo.cd) return; // ignora linhas sem CD
+          const cdsExistentes = subordinacoes.map(s => s.cd?.trim().toLowerCase());
+          for (const novo of novosDados) {
+            if (!novo.cd) continue;
             const cdLower = novo.cd.trim().toLowerCase();
-            const existenteIndex = cdsExistentes.indexOf(cdLower);
-            if (existenteIndex >= 0) {
-              subordinacoes[existenteIndex] = { ...subordinacoes[existenteIndex], ...novo };
-            } else {
+            const existente = cdsExistentes.includes(cdLower);
+            if (!existente) {
               subordinacoes.push(novo);
+            } else {
+              const idx = subordinacoes.findIndex(s => s.cd.trim().toLowerCase() === cdLower);
+              subordinacoes[idx] = { ...subordinacoes[idx], ...novo };
             }
-          });
-
-          // Salvar automaticamente no Firestore
-          for (const s of subordinacoes) {
-            await setDoc(doc(db, "subordinacoes", s.cd), s);
+            await setDoc(doc(db, "subordinacoes", novo.cd), novo);
           }
 
           alert("✅ Importação concluída e dados salvos no Firestore!");
-          atualizarTabela(subordinacoes);
-          preencherFiltros();
+          carregarSubordinacoes();
         } catch (err) {
           console.error(err);
           alert("❌ Erro ao importar o Excel. Verifique o formato do arquivo.");
         }
       };
-
       reader.readAsArrayBuffer(file);
     });
 
-    document.getElementById("btnApagar").addEventListener("click", async () => {
-      if (!confirm("Deseja realmente apagar todos os registros?")) return;
-      for (const s of subordinacoes) {
-        await deleteDoc(doc(db, "subordinacoes", s.cd));
-      }
-      subordinacoes = [];
-      atualizarTabela(subordinacoes);
-    });
-
+    // 🔎 Filtros
     function filtrar() {
       let lista = subordinacoes.filter(s => {
         return (!filtroDiretor.value || s.diretor === filtroDiretor.value) &&
