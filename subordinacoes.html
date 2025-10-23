@@ -145,7 +145,7 @@
 
     let subordinacoes = [];
 
-    // 🔄 Carrega registros do Firestore
+    // 🔄 Carregar registros do Firestore
     async function carregarSubordinacoes() {
       const snap = await getDocs(collection(db, "subordinacoes"));
       subordinacoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -153,10 +153,10 @@
       preencherFiltros();
     }
 
-    // 🧩 Atualiza tabela
+    // 🧩 Atualizar tabela
     function atualizarTabela(lista) {
       tabela.innerHTML = "";
-      lista.forEach((s, i) => {
+      lista.forEach((s) => {
         const linha = document.createElement("tr");
         linha.innerHTML = `
           <td>${s.diretor}</td>
@@ -171,7 +171,7 @@
       totalCDs.textContent = lista.length;
     }
 
-    // 🧠 Preenche filtros
+    // 🧠 Preencher filtros
     function preencherFiltros() {
       const diretores = [...new Set(subordinacoes.map(s => s.diretor))].sort();
       const grcs = [...new Set(subordinacoes.map(s => s.grc))].sort();
@@ -179,7 +179,7 @@
       filtroGrc.innerHTML = '<option value="">Todos os GRCs</option>' + grcs.map(g => `<option>${g}</option>`).join('');
     }
 
-    // ✏️ Editar registro
+    // ✏️ Editar linha
     window.editarLinha = async (cd) => {
       const registro = subordinacoes.find(s => s.cd === cd);
       if (!registro) return alert("Registro não encontrado.");
@@ -195,27 +195,38 @@
       }
     };
 
-    // 🗑️ Excluir linha individual
+    // 🗑️ Excluir linha
     window.excluirLinha = async (cd) => {
       if (!confirm(`Excluir o CD ${cd}?`)) return;
       await deleteDoc(doc(db, "subordinacoes", cd));
       subordinacoes = subordinacoes.filter(s => s.cd !== cd);
       atualizarTabela(subordinacoes);
-      alert("🗑️ Registro removido!");
+      alert("🗑️ Registro removido com sucesso!");
     };
 
-    // 🧹 Apagar todos
+    // 🧹 Apagar todos (com Promise.all)
     document.getElementById("btnApagar").addEventListener("click", async () => {
       if (!confirm("⚠️ Deseja realmente apagar TODOS os registros?")) return;
-      for (const s of subordinacoes) {
-        if (s.cd) await deleteDoc(doc(db, "subordinacoes", s.cd));
+
+      try {
+        const promises = subordinacoes
+          .filter(s => s.cd)
+          .map(s => deleteDoc(doc(db, "subordinacoes", s.cd)));
+        
+        await Promise.all(promises);
+
+        subordinacoes = [];
+        atualizarTabela([]);
+        totalCDs.textContent = 0;
+        alert("🧹 Todos os registros foram removidos com sucesso do Firestore!");
+        setTimeout(() => location.reload(), 1500);
+      } catch (error) {
+        console.error("Erro ao apagar todos:", error);
+        alert("❌ Ocorreu um erro ao apagar os dados.");
       }
-      subordinacoes = [];
-      atualizarTabela([]);
-      alert("🧹 Todos os registros foram excluídos!");
     });
 
-    // 📥 Importar Excel e salvar automaticamente
+    // 📥 Importar Excel
     document.getElementById("btnImportar").addEventListener("click", () => {
       const file = document.getElementById("inputExcel").files[0];
       if (!file) return alert("Selecione um arquivo Excel antes de importar.");
@@ -228,17 +239,8 @@
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
           const novosDados = XLSX.utils.sheet_to_json(sheet);
 
-          const cdsExistentes = subordinacoes.map(s => s.cd?.trim().toLowerCase());
           for (const novo of novosDados) {
             if (!novo.cd) continue;
-            const cdLower = novo.cd.trim().toLowerCase();
-            const existente = cdsExistentes.includes(cdLower);
-            if (!existente) {
-              subordinacoes.push(novo);
-            } else {
-              const idx = subordinacoes.findIndex(s => s.cd.trim().toLowerCase() === cdLower);
-              subordinacoes[idx] = { ...subordinacoes[idx], ...novo };
-            }
             await setDoc(doc(db, "subordinacoes", novo.cd), novo);
           }
 
@@ -252,7 +254,7 @@
       reader.readAsArrayBuffer(file);
     });
 
-    // 🔎 Filtros
+    // 🔎 Filtro
     function filtrar() {
       let lista = subordinacoes.filter(s => {
         return (!filtroDiretor.value || s.diretor === filtroDiretor.value) &&
