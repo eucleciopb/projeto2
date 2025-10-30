@@ -153,7 +153,7 @@
       apiKey: "AIzaSyBcXTj40CI4fEJOGp2T_ghh3Wwpki4OnW0",
       authDomain: "salasdereunioes-eb91a.firebaseapp.com",
       projectId: "salasdereunioes-eb91a",
-      storageBucket: "salasdereunioes-eb91a.firebasestorage.app",
+      storageBucket: "salasdereunioes-eb91a.appspot.com",
       messagingSenderId: "961898084996",
       appId: "1:961898084996:web:535185ceb0860e1e06e0d1"
     };
@@ -226,6 +226,7 @@
       });
     }
 
+    // 🔹 Corrigido: saldo = Entradas - Total Aprovadas (igual ao estoque.html)
     function atualizarResumo(dados) {
       let totalSolic = dados.length;
       let totalQtdSolic = 0;
@@ -236,12 +237,12 @@
         totalQtdAprov += d.qtdAprovada || 0;
       });
 
-      let entradas = 0, saidas = 0;
+      let entradas = 0;
       estoqueDados.forEach(e => {
         if (e.tipo === "Entrada") entradas += Number(e.quantidade);
-        else if (e.tipo === "Saída") saidas += Number(e.quantidade);
       });
-      const saldo = entradas - saidas;
+
+      const saldo = entradas - totalQtdAprov;
       const taxa = totalQtdSolic > 0 ? ((totalQtdAprov / totalQtdSolic) * 100).toFixed(1) : 0;
 
       totalSolicitacoes.textContent = totalSolic;
