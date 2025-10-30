@@ -1,102 +1,33 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Subordinações - Controle de CDs</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    body {
-      font-family: "Poppins", sans-serif;
-      background-color: #fff;
-      color: #333;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #0066cc;
-      margin-bottom: 20px;
-    }
-    .top-bar {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      gap: 10px;
-    }
-    input[type="file"], select, input[type="text"] {
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    button {
-      padding: 8px 15px;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.3s;
-      color: white;
-    }
-    .importar { background-color: #0077b6; }
-    .apagar { background-color: #d62828; }
-    .voltar { background-color: #666; }
-    button:hover { opacity: 0.8; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-    th {
-      background-color: #f5f5f5;
-      color: #333;
-    }
-    tr:hover {
-      background-color: #f1f1f1;
-    }
-    td button {
-      padding: 4px 10px;
-      border: none;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      color: #fff;
-      margin-right: 4px;
-    }
-    .editar { background-color: #2a9d8f; }
-    .excluir { background-color: #e63946; }
-    .tabela-container {
-      max-height: 450px;
-      overflow-y: auto;
-    }
-    .info {
-      margin-top: 15px;
-      font-weight: 600;
-    }
-    .toast {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #333;
-      color: #fff;
-      padding: 10px 16px;
-      border-radius: 6px;
-      opacity: 0;
-      transition: 0.4s;
-      z-index: 1000;
-    }
-    .toast.show {
-      opacity: 1;
-    }
+    body {font-family:"Poppins",sans-serif;background:#fff;color:#333;margin:0;padding:20px;}
+    h1{text-align:center;color:#0066cc;margin-bottom:20px;}
+    .top-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:20px;gap:10px;}
+    input[type="file"],select,input[type="text"]{padding:8px;border-radius:6px;border:1px solid #ccc;}
+    button{padding:8px 15px;border:none;border-radius:6px;font-weight:600;cursor:pointer;transition:0.3s;color:white;}
+    .importar{background-color:#0077b6;}
+    .apagar{background-color:#d62828;}
+    .voltar{background-color:#666;}
+    button:hover{opacity:0.8;}
+    table{width:100%;border-collapse:collapse;margin-top:15px;}
+    th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left;}
+    th{background:#f5f5f5;color:#333;}
+    tr:hover{background:#f1f1f1;}
+    td button{padding:4px 10px;border:none;border-radius:4px;font-size:0.8rem;color:#fff;margin-right:4px;}
+    .editar{background-color:#2a9d8f;}
+    .excluir{background-color:#e63946;}
+    .tabela-container{max-height:450px;overflow-y:auto;}
+    .info{margin-top:15px;font-weight:600;}
+    .toast{position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:10px 16px;border-radius:6px;opacity:0;transition:0.4s;z-index:1000;}
+    .toast.show{opacity:1;}
   </style>
 </head>
-
 <body>
   <h1>📋 Subordinações - Diretor / GRC / CD</h1>
 
@@ -128,10 +59,8 @@
   </div>
 
   <p class="info">Total de CDs cadastrados: <span id="totalCDs">0</span></p>
-
   <div id="toast" class="toast"></div>
 
-  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
     import { getFirestore, collection, getDocs, setDoc, deleteDoc, doc } 
@@ -181,8 +110,8 @@
           <td>${s.grc || ""}</td>
           <td>${s.cd || ""}</td>
           <td>
-            <button class="editar" onclick="editar('${s.cd}')">Editar</button>
-            <button class="excluir" onclick="excluir('${s.cd}')">Excluir</button>
+            <button class="editar" onclick="editar('${s.id}')">Editar</button>
+            <button class="excluir" onclick="excluir('${s.id}')">Excluir</button>
           </td>
         `;
         tabela.appendChild(tr);
@@ -197,30 +126,29 @@
       filtroGrc.innerHTML = '<option value="">Todos os GRCs</option>' + grcs.map(g => `<option>${g}</option>`).join('');
     }
 
-    window.editar = async (cd) => {
-      const reg = subordinacoes.find(s => s.cd === cd);
+    window.editar = async (id) => {
+      const reg = subordinacoes.find(s => s.id === id);
       if (!reg) return toastMsg("Registro não encontrado", "#d62828");
-
       const novoDir = prompt("Novo Diretor:", reg.diretor);
       const novoGrc = prompt("Novo GRC:", reg.grc);
       if (novoDir && novoGrc) {
-        await setDoc(doc(db, "subordinacoes", cd), { diretor: novoDir, grc: novoGrc, cd });
+        await setDoc(doc(db, "subordinacoes", id), { diretor: novoDir, grc: novoGrc, cd: reg.cd });
         toastMsg("Registro atualizado!");
         carregarSubordinacoes();
       }
     };
 
-    window.excluir = async (cd) => {
+    window.excluir = async (id) => {
       if (!confirm("Excluir este registro?")) return;
-      await deleteDoc(doc(db, "subordinacoes", cd));
-      subordinacoes = subordinacoes.filter(s => s.cd !== cd);
+      await deleteDoc(doc(db, "subordinacoes", id));
+      subordinacoes = subordinacoes.filter(s => s.id !== id);
       atualizarTabela(subordinacoes);
       toastMsg("Registro excluído!", "#e63946");
     };
 
     document.getElementById("btnApagar").addEventListener("click", async () => {
       if (!confirm("Deseja realmente apagar TODOS os registros?")) return;
-      const promises = subordinacoes.map(s => deleteDoc(doc(db, "subordinacoes", s.cd)));
+      const promises = subordinacoes.map(s => deleteDoc(doc(db, "subordinacoes", s.id)));
       await Promise.all(promises);
       subordinacoes = [];
       atualizarTabela([]);
@@ -230,16 +158,17 @@
     document.getElementById("btnImportar").addEventListener("click", () => {
       const file = document.getElementById("inputExcel").files[0];
       if (!file) return toastMsg("Selecione um arquivo Excel primeiro!", "#d62828");
-
       const reader = new FileReader();
       reader.onload = async e => {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: "array" });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet);
-
         for (const r of rows) {
-          if (r.cd) await setDoc(doc(db, "subordinacoes", r.cd), r);
+          if (r.cd) {
+            const id = r.cd.trim().replace(/\s+/g, "_"); // cria ID único baseado no CD
+            await setDoc(doc(db, "subordinacoes", id), r);
+          }
         }
         toastMsg("Importação concluída!");
         carregarSubordinacoes();
