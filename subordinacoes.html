@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Subordinações - Controle de CDs</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body {font-family:"Poppins",sans-serif;background:#fff;color:#333;margin:0;padding:20px;}
     h1{text-align:center;color:#0066cc;margin-bottom:20px;}
@@ -33,8 +34,8 @@
   <h1>📋 Subordinações - Diretor / GRC / CD</h1>
 
   <div class="top-bar">
-    <input type="file" id="inputCSV" accept=".csv">
-    <button class="importar" id="btnVisualizar">👀 Visualizar CSV</button>
+    <input type="file" id="inputExcel" accept=".xlsx, .xls">
+    <button class="importar" id="btnVisualizar">👀 Visualizar Excel</button>
     <button class="apagar" id="btnApagar">🗑️ Apagar Todos</button>
     <button class="voltar" onclick="window.location.href='index.html'">⬅️ Voltar</button>
   </div>
@@ -163,28 +164,30 @@
       toastMsg("Todos os registros foram removidos!", "#e63946");
     });
 
-    // ✅ VISUALIZAR CSV COM CORREÇÃO DE CABEÇALHOS
+    // ✅ VISUALIZAR EXCEL COM CORREÇÃO DE CABEÇALHOS
     document.getElementById("btnVisualizar").addEventListener("click", () => {
-      const file = document.getElementById("inputCSV").files[0];
-      if (!file) return toastMsg("Selecione um arquivo CSV primeiro!", "#d62828");
-      
+      const file = document.getElementById("inputExcel").files[0];
+      if (!file) return toastMsg("Selecione um arquivo Excel primeiro!", "#d62828");
+
       const reader = new FileReader();
       reader.onload = e => {
-        const text = e.target.result;
-        const lines = text.replace(/\r/g, '').trim().split("\n");
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet);
 
-        // Função para limpar e padronizar os nomes das colunas
+        // Função para limpar cabeçalhos e garantir leitura correta
         const normalize = str => str
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
           .trim()
           .toLowerCase();
 
-        const headers = lines[0].split(",").map(h => normalize(h));
-        preVisualizacao = lines.slice(1).map(line => {
-          const values = line.split(",").map(v => v.trim());
+        preVisualizacao = rows.map(r => {
           const obj = {};
-          headers.forEach((h, i) => obj[h] = values[i]);
+          for (let key in r) {
+            obj[normalize(key)] = r[key];
+          }
           return {
             diretor: obj["diretor"] || obj["dir"] || "",
             grc: obj["grc"] || obj["gerente"] || "",
@@ -192,12 +195,12 @@
           };
         });
 
-        if (preVisualizacao.length === 0) return toastMsg("CSV vazio!", "#d62828");
+        if (preVisualizacao.length === 0) return toastMsg("Planilha vazia!", "#d62828");
         atualizarTabela(preVisualizacao);
         acoesImport.style.display = "flex";
         toastMsg("Pré-visualização carregada!");
       };
-      reader.readAsText(file, "UTF-8");
+      reader.readAsArrayBuffer(file);
     });
 
     // ✅ CADASTRAR DIRETAMENTE NO FIRESTORE
