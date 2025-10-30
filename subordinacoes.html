@@ -14,6 +14,7 @@
     .importar{background-color:#0077b6;}
     .apagar{background-color:#d62828;}
     .voltar{background-color:#666;}
+    .salvar{background-color:#2a9d8f;}
     button:hover{opacity:0.8;}
     table{width:100%;border-collapse:collapse;margin-top:15px;}
     th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left;}
@@ -26,6 +27,7 @@
     .info{margin-top:15px;font-weight:600;}
     .toast{position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:10px 16px;border-radius:6px;opacity:0;transition:0.4s;z-index:1000;}
     .toast.show{opacity:1;}
+    #acoesImport{display:none;gap:10px;margin-top:10px;}
   </style>
 </head>
 <body>
@@ -33,7 +35,7 @@
 
   <div class="top-bar">
     <input type="file" id="inputExcel" accept=".xlsx, .xls">
-    <button class="importar" id="btnImportar">📥 Importar Excel</button>
+    <button class="importar" id="btnImportar">👀 Visualizar Excel</button>
     <button class="apagar" id="btnApagar">🗑️ Apagar Todos</button>
     <button class="voltar" onclick="window.location.href='index.html'">⬅️ Voltar</button>
   </div>
@@ -42,6 +44,11 @@
     <select id="filtroDiretor"><option value="">Todos os Diretores</option></select>
     <select id="filtroGrc"><option value="">Todos os GRCs</option></select>
     <input type="text" id="pesquisa" placeholder="Pesquisar CD...">
+  </div>
+
+  <div id="acoesImport">
+    <button class="salvar" id="btnSalvarBanco">✅ Cadastrar no Banco</button>
+    <button class="importar" id="btnSalvarExcel">💾 Salvar Excel Atual</button>
   </div>
 
   <div class="tabela-container">
@@ -84,8 +91,12 @@
     const filtroGrc = document.getElementById("filtroGrc");
     const pesquisa = document.getElementById("pesquisa");
     const toast = document.getElementById("toast");
+    const acoesImport = document.getElementById("acoesImport");
+    const btnSalvarBanco = document.getElementById("btnSalvarBanco");
+    const btnSalvarExcel = document.getElementById("btnSalvarExcel");
 
     let subordinacoes = [];
+    let preVisualizacao = [];
 
     function toastMsg(texto, cor="#2a9d8f") {
       toast.textContent = texto;
@@ -109,10 +120,10 @@
           <td>${s.diretor || ""}</td>
           <td>${s.grc || ""}</td>
           <td>${s.cd || ""}</td>
-          <td>
-            <button class="editar" onclick="editar('${s.id}')">Editar</button>
-            <button class="excluir" onclick="excluir('${s.id}')">Excluir</button>
-          </td>
+          <td>${s.id ? 
+            `<button class='editar' onclick="editar('${s.id}')">Editar</button>
+             <button class='excluir' onclick="excluir('${s.id}')">Excluir</button>`
+           : `<em>Pré-visualização</em>`}</td>
         `;
         tabela.appendChild(tr);
       });
@@ -155,25 +166,47 @@
       toastMsg("Todos os registros foram removidos!", "#e63946");
     });
 
+    // Visualizar Excel (não salva ainda)
     document.getElementById("btnImportar").addEventListener("click", () => {
       const file = document.getElementById("inputExcel").files[0];
       if (!file) return toastMsg("Selecione um arquivo Excel primeiro!", "#d62828");
       const reader = new FileReader();
-      reader.onload = async e => {
+      reader.onload = e => {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: "array" });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet);
-        for (const r of rows) {
-          if (r.cd) {
-            const id = r.cd.trim().replace(/\s+/g, "_"); // cria ID único baseado no CD
-            await setDoc(doc(db, "subordinacoes", id), r);
-          }
-        }
-        toastMsg("Importação concluída!");
-        carregarSubordinacoes();
+        preVisualizacao = XLSX.utils.sheet_to_json(sheet);
+        if (preVisualizacao.length === 0) return toastMsg("Arquivo sem dados!", "#d62828");
+        atualizarTabela(preVisualizacao);
+        acoesImport.style.display = "flex";
+        toastMsg("Pré-visualização carregada!");
       };
       reader.readAsArrayBuffer(file);
+    });
+
+    // Cadastrar no Firestore
+    btnSalvarBanco.addEventListener("click", async () => {
+      if (preVisualizacao.length === 0) return toastMsg("Nada para salvar!", "#d62828");
+      for (const r of preVisualizacao) {
+        if (r.cd) {
+          const id = r.cd.trim().replace(/\s+/g, "_");
+          await setDoc(doc(db, "subordinacoes", id), r);
+        }
+      }
+      acoesImport.style.display = "none";
+      preVisualizacao = [];
+      toastMsg("Registros salvos no banco!");
+      carregarSubordinacoes();
+    });
+
+    // Salvar Excel local (backup)
+    btnSalvarExcel.addEventListener("click", () => {
+      if (preVisualizacao.length === 0) return toastMsg("Nada para salvar!", "#d62828");
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(preVisualizacao);
+      XLSX.utils.book_append_sheet(wb, ws, "Prévia");
+      XLSX.writeFile(wb, "Subordinacoes_Visualizadas.xlsx");
+      toastMsg("Arquivo salvo localmente!");
     });
 
     function filtrar() {
