@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Subordinações - Controle de CDs</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body {font-family:"Poppins",sans-serif;background:#fff;color:#333;margin:0;padding:20px;}
     h1{text-align:center;color:#0066cc;margin-bottom:20px;}
@@ -34,8 +33,8 @@
   <h1>📋 Subordinações - Diretor / GRC / CD</h1>
 
   <div class="top-bar">
-    <input type="file" id="inputExcel" accept=".xlsx, .xls">
-    <button class="importar" id="btnImportar">👀 Visualizar Excel</button>
+    <input type="file" id="inputCSV" accept=".csv">
+    <button class="importar" id="btnVisualizar">👀 Visualizar CSV</button>
     <button class="apagar" id="btnApagar">🗑️ Apagar Todos</button>
     <button class="voltar" onclick="window.location.href='index.html'">⬅️ Voltar</button>
   </div>
@@ -48,7 +47,6 @@
 
   <div id="acoesImport">
     <button class="salvar" id="btnSalvarBanco">✅ Cadastrar no Banco</button>
-    <button class="importar" id="btnSalvarExcel">💾 Salvar Excel Atual</button>
   </div>
 
   <div class="tabela-container">
@@ -93,7 +91,6 @@
     const toast = document.getElementById("toast");
     const acoesImport = document.getElementById("acoesImport");
     const btnSalvarBanco = document.getElementById("btnSalvarBanco");
-    const btnSalvarExcel = document.getElementById("btnSalvarExcel");
 
     let subordinacoes = [];
     let preVisualizacao = [];
@@ -166,27 +163,35 @@
       toastMsg("Todos os registros foram removidos!", "#e63946");
     });
 
-    // Visualizar Excel (não salva ainda)
-    document.getElementById("btnImportar").addEventListener("click", () => {
-      const file = document.getElementById("inputExcel").files[0];
-      if (!file) return toastMsg("Selecione um arquivo Excel primeiro!", "#d62828");
+    // Visualizar CSV
+    document.getElementById("btnVisualizar").addEventListener("click", () => {
+      const file = document.getElementById("inputCSV").files[0];
+      if (!file) return toastMsg("Selecione um arquivo CSV primeiro!", "#d62828");
+      
       const reader = new FileReader();
       reader.onload = e => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        preVisualizacao = XLSX.utils.sheet_to_json(sheet);
-        if (preVisualizacao.length === 0) return toastMsg("Arquivo sem dados!", "#d62828");
+        const text = e.target.result;
+        const lines = text.trim().split("\n");
+        const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+        preVisualizacao = lines.slice(1).map(line => {
+          const values = line.split(",").map(v => v.trim());
+          const obj = {};
+          headers.forEach((h, i) => obj[h] = values[i]);
+          return obj;
+        });
+
+        if (preVisualizacao.length === 0) return toastMsg("CSV vazio!", "#d62828");
         atualizarTabela(preVisualizacao);
         acoesImport.style.display = "flex";
         toastMsg("Pré-visualização carregada!");
       };
-      reader.readAsArrayBuffer(file);
+      reader.readAsText(file, "UTF-8");
     });
 
-    // Cadastrar no Firestore
+    // Cadastrar direto no Firestore
     btnSalvarBanco.addEventListener("click", async () => {
       if (preVisualizacao.length === 0) return toastMsg("Nada para salvar!", "#d62828");
+      toastMsg("Salvando dados...");
       for (const r of preVisualizacao) {
         if (r.cd) {
           const id = r.cd.trim().replace(/\s+/g, "_");
@@ -195,18 +200,8 @@
       }
       acoesImport.style.display = "none";
       preVisualizacao = [];
-      toastMsg("Registros salvos no banco!");
+      toastMsg("Registros salvos com sucesso!");
       carregarSubordinacoes();
-    });
-
-    // Salvar Excel local (backup)
-    btnSalvarExcel.addEventListener("click", () => {
-      if (preVisualizacao.length === 0) return toastMsg("Nada para salvar!", "#d62828");
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(preVisualizacao);
-      XLSX.utils.book_append_sheet(wb, ws, "Prévia");
-      XLSX.writeFile(wb, "Subordinacoes_Visualizadas.xlsx");
-      toastMsg("Arquivo salvo localmente!");
     });
 
     function filtrar() {
