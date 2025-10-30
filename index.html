@@ -22,6 +22,7 @@
       align-items: center;
       height: 100vh;
       text-align: center;
+      overflow: hidden;
     }
 
     h1 {
@@ -57,26 +58,12 @@
       background: #0077b6;
     }
 
-    .novo {
-      background: #00c46a;
-    }
-    .novo:hover {
-      background: #009f55;
-    }
-
-    .estoque {
-      background: #f9a826;
-    }
-    .estoque:hover {
-      background: #d88b00;
-    }
-
-    .sub {
-      background: #9333ea;
-    }
-    .sub:hover {
-      background: #7928ca;
-    }
+    .novo { background: #00c46a; }
+    .novo:hover { background: #009f55; }
+    .estoque { background: #f9a826; }
+    .estoque:hover { background: #d88b00; }
+    .sub { background: #9333ea; }
+    .sub:hover { background: #7928ca; }
 
     footer {
       position: absolute;
@@ -85,21 +72,82 @@
       color: #aaa;
     }
 
+    /* 🔒 Tela de Login */
+    #loginOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #loginBox {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      text-align: center;
+      width: 90%;
+      max-width: 320px;
+    }
+
+    #loginBox h2 {
+      margin-bottom: 20px;
+      color: #00b4d8;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    select {
+      background: #f1f1f1;
+    }
+
+    input[type="password"] {
+      background: #fff;
+    }
+
+    #loginBtn {
+      background: #00b4d8;
+      color: white;
+      font-weight: 600;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      width: 100%;
+    }
+
+    #loginBtn:hover {
+      background: #0077b6;
+    }
+
+    #logoutBtn {
+      background: #ef4444;
+      margin-top: 10px;
+      width: 150px;
+    }
+
     @media (max-width: 500px) {
-      h1 {
-        font-size: 1.5rem;
-      }
-      button {
-        font-size: 1rem;
-        padding: 12px;
-      }
+      h1 { font-size: 1.5rem; }
+      button { font-size: 1rem; padding: 12px; }
     }
   </style>
 </head>
 <body>
   <h1>🎒 Controle de Solicitações de Mochilas</h1>
 
-  <div class="menu">
+  <div class="menu" id="menuContent">
     <button class="novo" onclick="window.location.href='index2.html'">
       ➕ Registrar nova mochila
     </button>
@@ -115,8 +163,66 @@
     <button class="sub" onclick="window.location.href='subordinacoes.html'">
       🧩 Subordinações
     </button>
+
+    <button id="logoutBtn" onclick="logout()">🚪 Sair</button>
   </div>
 
   <footer>© 2025 - Grupo Petrópolis | Sistema de Controle de Mochilas</footer>
+
+  <!-- 🔒 Modal de Login -->
+  <div id="loginOverlay">
+    <div id="loginBox">
+      <h2>🔐 Acesso Restrito</h2>
+      <select id="usuarioSelect">
+        <option value="">Selecione seu nome</option>
+        <option value="bruna">Bruna</option>
+        <option value="elaine">Elaine</option>
+        <option value="euclecio">Euclecio</option>
+        <option value="pedro">Pedro</option>
+      </select>
+      <input type="password" id="senhaInput" placeholder="Senha" />
+      <button id="loginBtn">Entrar</button>
+      <p id="msgErro" style="color:#f87171;margin-top:10px;"></p>
+    </div>
+  </div>
+
+  <script>
+    const senhaPadrao = "Petra25";
+
+    function verificarLogin() {
+      const usuario = localStorage.getItem("usuarioLogado");
+      if (usuario) {
+        document.getElementById("loginOverlay").style.display = "none";
+        document.querySelector("h1").textContent = `🎒 Controle de Solicitações de Mochilas - ${usuario.charAt(0).toUpperCase() + usuario.slice(1)}`;
+      }
+    }
+
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const usuario = document.getElementById("usuarioSelect").value;
+      const senha = document.getElementById("senhaInput").value;
+      const msgErro = document.getElementById("msgErro");
+
+      if (!usuario || !senha) {
+        msgErro.textContent = "Preencha todos os campos!";
+        return;
+      }
+
+      if (senha !== senhaPadrao) {
+        msgErro.textContent = "Senha incorreta!";
+        return;
+      }
+
+      localStorage.setItem("usuarioLogado", usuario);
+      document.getElementById("loginOverlay").style.display = "none";
+      document.querySelector("h1").textContent = `🎒 Controle de Solicitações de Mochilas - ${usuario.charAt(0).toUpperCase() + usuario.slice(1)}`;
+    });
+
+    function logout() {
+      localStorage.removeItem("usuarioLogado");
+      window.location.reload();
+    }
+
+    verificarLogin();
+  </script>
 </body>
 </html>
