@@ -90,9 +90,75 @@
     }
     .grafico-container:hover {transform: scale(0.93);}
     canvas {width: 100% !important; height: 250px !important;}
+
+    /* 🔒 Estilo do login */
+    #loginOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    #loginBox {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      text-align: center;
+      width: 90%;
+      max-width: 320px;
+      color: white;
+    }
+    #loginBox h2 {
+      margin-bottom: 20px;
+      color: #00b4d8;
+    }
+    #loginBox select, #loginBox input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+    }
+    #loginBox select { background: #f1f1f1; }
+    #loginBox input[type="password"] { background: #fff; }
+    #loginBtn {
+      background: #00b4d8;
+      color: white;
+      font-weight: 600;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      width: 100%;
+    }
+    #loginBtn:hover { background: #0077b6; }
   </style>
 </head>
+
 <body>
+  <!-- 🔒 BLOQUEIO DE LOGIN -->
+  <div id="loginOverlay">
+    <div id="loginBox">
+      <h2>🔐 Acesso Restrito</h2>
+      <select id="usuarioSelect">
+        <option value="">Selecione seu nome</option>
+        <option value="bruna">Bruna</option>
+        <option value="elaine">Elaine</option>
+        <option value="euclecio">Euclecio</option>
+        <option value="pedro">Pedro</option>
+      </select>
+      <input type="password" id="senhaInput" placeholder="Senha" />
+      <button id="loginBtn">Entrar</button>
+      <p id="msgErro" style="color:#f87171;margin-top:10px;"></p>
+    </div>
+  </div>
+
   <div class="container">
     <h1>📊 Resumo de Solicitações de Mochilas</h1>
 
@@ -119,14 +185,9 @@
       <table>
         <thead>
           <tr>
-            <th>CD</th>
-            <th>Diretor</th>
-            <th>GRC</th>
-            <th>Solicitante</th>
-            <th>Cargo</th>
-            <th>Data</th>
-            <th>Solicitadas</th>
-            <th>Aprovadas</th>
+            <th>CD</th><th>Diretor</th><th>GRC</th>
+            <th>Solicitante</th><th>Cargo</th>
+            <th>Data</th><th>Solicitadas</th><th>Aprovadas</th>
           </tr>
         </thead>
         <tbody id="tabelaResumo"></tbody>
@@ -144,6 +205,34 @@
     <footer>© 2025 - Controle de Mochilas | Grupo Petrópolis</footer>
   </div>
 
+  <!-- 🔒 SCRIPT DE LOGIN -->
+  <script>
+    const senhaPadrao = "Petra25";
+    function verificarLogin() {
+      const usuario = localStorage.getItem("usuarioLogado");
+      const overlay = document.getElementById("loginOverlay");
+      const titulo = document.querySelector("h1");
+      if (!usuario) overlay.style.display = "flex";
+      else {
+        overlay.style.display = "none";
+        titulo.textContent += ` - ${usuario.charAt(0).toUpperCase() + usuario.slice(1)}`;
+      }
+    }
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const usuario = document.getElementById("usuarioSelect").value;
+      const senha = document.getElementById("senhaInput").value;
+      const msgErro = document.getElementById("msgErro");
+      if (!usuario || !senha) { msgErro.textContent = "Preencha todos os campos!"; return; }
+      if (senha !== senhaPadrao) { msgErro.textContent = "Senha incorreta!"; return; }
+      localStorage.setItem("usuarioLogado", usuario);
+      document.getElementById("loginOverlay").style.display = "none";
+      const titulo = document.querySelector("h1");
+      titulo.textContent += ` - ${usuario.charAt(0).toUpperCase() + usuario.slice(1)}`;
+    });
+    verificarLogin();
+  </script>
+
+  <!-- 🔥 SEU SCRIPT FIREBASE ORIGINAL -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
     import { getFirestore, collection, getDocs } 
@@ -160,7 +249,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
     const tabela = document.getElementById('tabelaResumo');
     const totalSolicitacoes = document.getElementById('totalSolicitacoes');
     const totalSolicitadas = document.getElementById('totalSolicitadas');
@@ -182,7 +270,6 @@
       dadosGerais = solicitacoesSnap.docs.map(d => d.data());
       estoqueDados = estoqueSnap.docs.map(d => d.data());
       subordinacoes = subSnap.docs.map(d => d.data());
-
       atualizarTudo();
     }
 
@@ -196,7 +283,6 @@
       const cargo = filtroCargo.value;
       const mesAno = filtroMesAno.value;
       const termo = pesquisa.value.toLowerCase();
-
       if (cargo) filtrados = filtrados.filter(d => d.cargo === cargo);
       if (mesAno) filtrados = filtrados.filter(d => d.data?.startsWith(mesAno));
       if (termo) filtrados = filtrados.filter(d =>
@@ -226,25 +312,13 @@
       });
     }
 
-    // 🔹 Corrigido: saldo = Entradas - Total Aprovadas (igual ao estoque.html)
     function atualizarResumo(dados) {
-      let totalSolic = dados.length;
-      let totalQtdSolic = 0;
-      let totalQtdAprov = 0;
-
-      dados.forEach(d => {
-        totalQtdSolic += d.qtdSolicitada || 0;
-        totalQtdAprov += d.qtdAprovada || 0;
-      });
-
+      let totalSolic = dados.length, totalQtdSolic = 0, totalQtdAprov = 0;
+      dados.forEach(d => { totalQtdSolic += d.qtdSolicitada || 0; totalQtdAprov += d.qtdAprovada || 0; });
       let entradas = 0;
-      estoqueDados.forEach(e => {
-        if (e.tipo === "Entrada") entradas += Number(e.quantidade);
-      });
-
+      estoqueDados.forEach(e => { if (e.tipo === "Entrada") entradas += Number(e.quantidade); });
       const saldo = entradas - totalQtdAprov;
       const taxa = totalQtdSolic > 0 ? ((totalQtdAprov / totalQtdSolic) * 100).toFixed(1) : 0;
-
       totalSolicitacoes.textContent = totalSolic;
       totalSolicitadas.textContent = totalQtdSolic;
       totalAprovadas.textContent = totalQtdAprov;
@@ -254,7 +328,6 @@
 
     function atualizarGraficos(dados) {
       const porMes = {}, porDir = {}, porGrc = {};
-
       dados.forEach(d => {
         const sub = buscarSub(d.cd);
         const mes = d.data?.slice(0, 7) || "N/A";
@@ -262,26 +335,14 @@
         porDir[sub.diretor] = (porDir[sub.diretor] || 0) + (d.qtdAprovada || 0);
         porGrc[sub.grc] = (porGrc[sub.grc] || 0) + (d.qtdAprovada || 0);
       });
-
       const cfg = (labels, data, titulo) => ({
         type: "bar",
-        data: {
-          labels, datasets: [{
-            label: titulo,
-            data,
-            backgroundColor: "#00b4d8"
-          }]
-        },
+        data: { labels, datasets: [{ label: titulo, data, backgroundColor: "#00b4d8" }] },
         options: {
           responsive: true,
           plugins: {
             legend: { display: true, labels: { color: "#fff" }},
-            datalabels: {
-              color: "#fff",
-              anchor: "end",
-              align: "top",
-              formatter: v => v
-            },
+            datalabels: { color: "#fff", anchor: "end", align: "top", formatter: v => v },
             title: { display: true, text: titulo, color: "#fff", font: { size: 14 }}
           },
           scales: {
@@ -291,15 +352,10 @@
         },
         plugins: [ChartDataLabels]
       });
-
       const ctxMes = document.getElementById("grafMes").getContext("2d");
       const ctxDir = document.getElementById("grafDiretor").getContext("2d");
       const ctxGrc = document.getElementById("grafGrc").getContext("2d");
-
-      if (grafMes) grafMes.destroy();
-      if (grafDiretor) grafDiretor.destroy();
-      if (grafGrc) grafGrc.destroy();
-
+      if (grafMes) grafMes.destroy(); if (grafDiretor) grafDiretor.destroy(); if (grafGrc) grafGrc.destroy();
       grafMes = new Chart(ctxMes, cfg(Object.keys(porMes), Object.values(porMes), "Mochilas Aprovadas por Mês/Ano"));
       grafDiretor = new Chart(ctxDir, cfg(Object.keys(porDir), Object.values(porDir), "Mochilas Aprovadas por Diretor"));
       grafGrc = new Chart(ctxGrc, cfg(Object.keys(porGrc), Object.values(porGrc), "Mochilas Aprovadas por GRC"));
@@ -308,7 +364,6 @@
     filtroCargo.addEventListener("change", atualizarTudo);
     filtroMesAno.addEventListener("change", atualizarTudo);
     pesquisa.addEventListener("input", atualizarTudo);
-
     carregarResumo();
   </script>
 </body>

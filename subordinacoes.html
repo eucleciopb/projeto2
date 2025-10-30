@@ -30,9 +30,74 @@
     #acoesImport{display:none;gap:10px;margin-top:10px;}
     #progressBar {margin-top:15px;width:100%;background:#eee;border-radius:10px;overflow:hidden;display:none;}
     #progressFill {height:18px;background:#2a9d8f;width:0%;text-align:center;color:#fff;font-size:12px;line-height:18px;}
+
+    /* 🔒 LOGIN */
+    #loginOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+    #loginBox {
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      text-align: center;
+      width: 90%;
+      max-width: 320px;
+      color: white;
+    }
+    #loginBox h2 {
+      margin-bottom: 20px;
+      color: #00b4d8;
+    }
+    #loginBox select, #loginBox input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+    }
+    #loginBox select { background: #f1f1f1; }
+    #loginBox input[type="password"] { background: #fff; }
+    #loginBtn {
+      background: #00b4d8;
+      color: white;
+      font-weight: 600;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      width: 100%;
+    }
+    #loginBtn:hover { background: #0077b6; }
   </style>
 </head>
 <body>
+  <!-- 🔒 BLOQUEIO DE LOGIN -->
+  <div id="loginOverlay">
+    <div id="loginBox">
+      <h2>🔐 Acesso Restrito</h2>
+      <select id="usuarioSelect">
+        <option value="">Selecione seu nome</option>
+        <option value="bruna">Bruna</option>
+        <option value="elaine">Elaine</option>
+        <option value="euclecio">Euclecio</option>
+        <option value="pedro">Pedro</option>
+      </select>
+      <input type="password" id="senhaInput" placeholder="Senha" />
+      <button id="loginBtn">Entrar</button>
+      <p id="msgErro" style="color:#f87171;margin-top:10px;"></p>
+    </div>
+  </div>
+
   <h1>📋 Subordinações - Diretor / GRC / CD</h1>
 
   <div class="top-bar">
@@ -73,11 +138,39 @@
   <p class="info">Total de CDs cadastrados: <span id="totalCDs">0</span></p>
   <div id="toast" class="toast"></div>
 
+  <!-- 🔒 SCRIPT DE LOGIN -->
+  <script>
+    const senhaPadrao = "Petra25";
+    function verificarLogin() {
+      const usuario = localStorage.getItem("usuarioLogado");
+      const overlay = document.getElementById("loginOverlay");
+      const titulo = document.querySelector("h1");
+      if (!usuario) overlay.style.display = "flex";
+      else {
+        overlay.style.display = "none";
+        titulo.textContent += ` - ${usuario.charAt(0).toUpperCase() + usuario.slice(1)}`;
+      }
+    }
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const usuario = document.getElementById("usuarioSelect").value;
+      const senha = document.getElementById("senhaInput").value;
+      const msgErro = document.getElementById("msgErro");
+      if (!usuario || !senha) { msgErro.textContent = "Preencha todos os campos!"; return; }
+      if (senha !== senhaPadrao) { msgErro.textContent = "Senha incorreta!"; return; }
+      localStorage.setItem("usuarioLogado", usuario);
+      document.getElementById("loginOverlay").style.display = "none";
+      const titulo = document.querySelector("h1");
+      titulo.textContent += ` - ${usuario.charAt(0).toUpperCase() + usuario.slice(1)}`;
+    });
+    verificarLogin();
+  </script>
+
+  <!-- 🔥 FIREBASE SCRIPT ORIGINAL -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
     import { getFirestore, collection, getDocs, setDoc, deleteDoc, doc } 
       from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
-
+    
     const firebaseConfig = {
       apiKey: "AIzaSyBcXTj40CI4fEJOGp2T_ghh3Wwpki4OnW0",
       authDomain: "salasdereunioes-eb91a.firebaseapp.com",
@@ -172,7 +265,7 @@
       toastMsg("Todos os registros foram removidos!", "#e63946");
     });
 
-    // ✅ VISUALIZAR EXCEL COM SUPORTE A "EMPRESA"
+    // VISUALIZAR EXCEL
     document.getElementById("btnVisualizar").addEventListener("click", () => {
       const file = document.getElementById("inputExcel").files[0];
       if (!file) return toastMsg("Selecione um arquivo Excel primeiro!", "#d62828");
@@ -184,25 +277,13 @@
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet);
 
-        const normalize = str => str
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .trim()
-          .toLowerCase();
+        const normalize = str => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 
         preVisualizacao = rows.map(r => {
           const obj = {};
           for (let key in r) obj[normalize(key)] = r[key];
-
-          const cdKey = Object.keys(obj).find(k =>
-            k.includes("cd") || k.includes("empresa") || k.includes("centro")
-          );
-
-          return {
-            diretor: obj["diretor"] || obj["dir"] || "",
-            grc: obj["grc"] || obj["gerente"] || "",
-            cd: obj[cdKey] || ""
-          };
+          const cdKey = Object.keys(obj).find(k => k.includes("cd") || k.includes("empresa") || k.includes("centro"));
+          return { diretor: obj["diretor"] || "", grc: obj["grc"] || "", cd: obj[cdKey] || "" };
         });
 
         if (preVisualizacao.length === 0) return toastMsg("Planilha vazia!", "#d62828");
@@ -213,17 +294,12 @@
       reader.readAsArrayBuffer(file);
     });
 
-    // ✅ CADASTRAR DIRETAMENTE NO FIRESTORE COM BARRA DE PROGRESSO
+    // SALVAR NO FIREBASE
     btnSalvarBanco.addEventListener("click", async () => {
       if (preVisualizacao.length === 0) return toastMsg("Nada para salvar!", "#d62828");
-
       progressBar.style.display = "block";
       progressFill.style.width = "0%";
-      progressFill.textContent = "0%";
-
-      let total = preVisualizacao.length;
-      let count = 0;
-
+      let total = preVisualizacao.length, count = 0;
       for (const r of preVisualizacao) {
         if (!r.cd) continue;
         const id = r.cd.trim().replace(/\s+/g, "_");
@@ -233,12 +309,10 @@
         progressFill.style.width = pct + "%";
         progressFill.textContent = `Salvando ${count} de ${total} (${pct}%)`;
       }
-
       preVisualizacao = [];
       acoesImport.style.display = "none";
       toastMsg("Registros salvos com sucesso!");
       carregarSubordinacoes();
-
       setTimeout(() => {
         progressFill.style.width = "100%";
         progressFill.textContent = "Concluído ✅";
@@ -247,11 +321,11 @@
     });
 
     function filtrar() {
-      let lista = subordinacoes.filter(s => {
-        return (!filtroDiretor.value || s.diretor === filtroDiretor.value) &&
-               (!filtroGrc.value || s.grc === filtroGrc.value) &&
-               (!pesquisa.value || s.cd.toLowerCase().includes(pesquisa.value.toLowerCase()));
-      });
+      let lista = subordinacoes.filter(s =>
+        (!filtroDiretor.value || s.diretor === filtroDiretor.value) &&
+        (!filtroGrc.value || s.grc === filtroGrc.value) &&
+        (!pesquisa.value || s.cd.toLowerCase().includes(pesquisa.value.toLowerCase()))
+      );
       atualizarTabela(lista);
     }
 
