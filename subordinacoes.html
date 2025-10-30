@@ -28,6 +28,8 @@
     .toast{position:fixed;top:20px;right:20px;background:#333;color:#fff;padding:10px 16px;border-radius:6px;opacity:0;transition:0.4s;z-index:1000;}
     .toast.show{opacity:1;}
     #acoesImport{display:none;gap:10px;margin-top:10px;}
+    #progressBar {margin-top:15px;width:100%;background:#eee;border-radius:10px;overflow:hidden;display:none;}
+    #progressFill {height:18px;background:#2a9d8f;width:0%;text-align:center;color:#fff;font-size:12px;line-height:18px;}
   </style>
 </head>
 <body>
@@ -48,6 +50,10 @@
 
   <div id="acoesImport">
     <button class="salvar" id="btnSalvarBanco">✅ Cadastrar no Banco</button>
+  </div>
+
+  <div id="progressBar">
+    <div id="progressFill">0%</div>
   </div>
 
   <div class="tabela-container">
@@ -92,6 +98,8 @@
     const toast = document.getElementById("toast");
     const acoesImport = document.getElementById("acoesImport");
     const btnSalvarBanco = document.getElementById("btnSalvarBanco");
+    const progressBar = document.getElementById("progressBar");
+    const progressFill = document.getElementById("progressFill");
 
     let subordinacoes = [];
     let preVisualizacao = [];
@@ -164,7 +172,7 @@
       toastMsg("Todos os registros foram removidos!", "#e63946");
     });
 
-    // ✅ VISUALIZAR EXCEL COM CORREÇÃO DE CABEÇALHOS
+    // ✅ VISUALIZAR EXCEL COM SUPORTE A "EMPRESA"
     document.getElementById("btnVisualizar").addEventListener("click", () => {
       const file = document.getElementById("inputExcel").files[0];
       if (!file) return toastMsg("Selecione um arquivo Excel primeiro!", "#d62828");
@@ -176,7 +184,6 @@
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(sheet);
 
-        // Função para limpar cabeçalhos e garantir leitura correta
         const normalize = str => str
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
@@ -185,13 +192,16 @@
 
         preVisualizacao = rows.map(r => {
           const obj = {};
-          for (let key in r) {
-            obj[normalize(key)] = r[key];
-          }
+          for (let key in r) obj[normalize(key)] = r[key];
+
+          const cdKey = Object.keys(obj).find(k =>
+            k.includes("cd") || k.includes("empresa") || k.includes("centro")
+          );
+
           return {
             diretor: obj["diretor"] || obj["dir"] || "",
             grc: obj["grc"] || obj["gerente"] || "",
-            cd: obj["cd"] || obj["centro"] || ""
+            cd: obj[cdKey] || ""
           };
         });
 
@@ -203,20 +213,37 @@
       reader.readAsArrayBuffer(file);
     });
 
-    // ✅ CADASTRAR DIRETAMENTE NO FIRESTORE
+    // ✅ CADASTRAR DIRETAMENTE NO FIRESTORE COM BARRA DE PROGRESSO
     btnSalvarBanco.addEventListener("click", async () => {
       if (preVisualizacao.length === 0) return toastMsg("Nada para salvar!", "#d62828");
-      toastMsg("Salvando dados...");
+
+      progressBar.style.display = "block";
+      progressFill.style.width = "0%";
+      progressFill.textContent = "0%";
+
+      let total = preVisualizacao.length;
+      let count = 0;
+
       for (const r of preVisualizacao) {
-        if (r.cd) {
-          const id = r.cd.trim().replace(/\s+/g, "_");
-          await setDoc(doc(db, "subordinacoes", id), r);
-        }
+        if (!r.cd) continue;
+        const id = r.cd.trim().replace(/\s+/g, "_");
+        await setDoc(doc(db, "subordinacoes", id), r);
+        count++;
+        const pct = Math.round((count / total) * 100);
+        progressFill.style.width = pct + "%";
+        progressFill.textContent = `Salvando ${count} de ${total} (${pct}%)`;
       }
-      acoesImport.style.display = "none";
+
       preVisualizacao = [];
+      acoesImport.style.display = "none";
       toastMsg("Registros salvos com sucesso!");
       carregarSubordinacoes();
+
+      setTimeout(() => {
+        progressFill.style.width = "100%";
+        progressFill.textContent = "Concluído ✅";
+        setTimeout(() => progressBar.style.display = "none", 1500);
+      }, 500);
     });
 
     function filtrar() {
