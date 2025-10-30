@@ -163,7 +163,7 @@
       toastMsg("Todos os registros foram removidos!", "#e63946");
     });
 
-    // Visualizar CSV
+    // ✅ VISUALIZAR CSV COM CORREÇÃO DE CABEÇALHOS
     document.getElementById("btnVisualizar").addEventListener("click", () => {
       const file = document.getElementById("inputCSV").files[0];
       if (!file) return toastMsg("Selecione um arquivo CSV primeiro!", "#d62828");
@@ -171,13 +171,25 @@
       const reader = new FileReader();
       reader.onload = e => {
         const text = e.target.result;
-        const lines = text.replace(/\r/g, '').trim().split("\n"); // remove \r e espaços extras
-        const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+        const lines = text.replace(/\r/g, '').trim().split("\n");
+
+        // Função para limpar e padronizar os nomes das colunas
+        const normalize = str => str
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .trim()
+          .toLowerCase();
+
+        const headers = lines[0].split(",").map(h => normalize(h));
         preVisualizacao = lines.slice(1).map(line => {
           const values = line.split(",").map(v => v.trim());
           const obj = {};
           headers.forEach((h, i) => obj[h] = values[i]);
-          return obj;
+          return {
+            diretor: obj["diretor"] || obj["dir"] || "",
+            grc: obj["grc"] || obj["gerente"] || "",
+            cd: obj["cd"] || obj["centro"] || ""
+          };
         });
 
         if (preVisualizacao.length === 0) return toastMsg("CSV vazio!", "#d62828");
@@ -188,7 +200,7 @@
       reader.readAsText(file, "UTF-8");
     });
 
-    // Cadastrar direto no Firestore
+    // ✅ CADASTRAR DIRETAMENTE NO FIRESTORE
     btnSalvarBanco.addEventListener("click", async () => {
       if (preVisualizacao.length === 0) return toastMsg("Nada para salvar!", "#d62828");
       toastMsg("Salvando dados...");
